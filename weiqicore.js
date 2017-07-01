@@ -12,6 +12,15 @@ var WEIQI_DEFAULT_SIZE = 19;
 var WEIQI_MAX_SIZE = 26;
 
 /**
+ * @return {null}
+ */
+var ChangePlayer = function (player) {
+    if (player === WEIQI_BLACK) return WEIQI_WHITE;
+    if (player === WEIQI_WHITE) return WEIQI_BLACK;
+    return null;
+};
+
+/**
  *
  * 点的计算。
  * 参数必须。
@@ -144,7 +153,10 @@ function WeiqiPointSet(points) {
 		}
 		return pointlist;
 	};
-	Set.Str = function (){
+    /**
+     * @return {string}
+     */
+    Set.Str = function (){
 		var items = [];
 		for( var i = 0 ; i<Data.length; i++) {
 			items.push(Data[i].Str());
@@ -174,6 +186,16 @@ function WeiqiMap(size) {
         Size = WEIQI_MAX_SIZE;
     }
 
+    //初始化数据。
+    var Data = [];
+    for( var x = 0; x < Size; x ++) {
+        var row = [];
+        for( var y = 0; y < Size; y ++) {
+            row.push(0);
+        }
+        Data.push(row);
+    }
+
     Map.GetSize = function () {
         return Size;
     };
@@ -184,15 +206,12 @@ function WeiqiMap(size) {
         return point.X() < Size && point.Y() < Size && point.X() >= 0 && point.Y() >= 0;
     };
 
-	//初始化数据。
-    var Data = [];
-    for( var x = 0; x < Size; x ++) {
-        var row = [];
-        for( var y = 0; y < Size; y ++) {
-            row.push(0);
-        }
-        Data.push(row);
-    }
+    /**
+     * @return {boolean}
+     */
+    Map.HasPlayer = function (point) {
+        return Data[point.X()][point.Y()]  > 0;
+    };
 
     Map.Get = function (point) {
         return Data[point.X()][point.Y()];
@@ -200,6 +219,23 @@ function WeiqiMap(size) {
 
     Map.Set = function (point, player) {
         Data[point.X()][point.Y()] = player;
+    };
+
+    Map.SetList = function (point_list, val) {
+        for( var i=0; i<point_list.length; i++) {
+            Map.Set(point_list[i], val);
+        }
+    };
+
+    Map.SetSet = function (point_set, val) {
+        for( var i=0; i<point_set.Length(); i++) {
+            Map.Set(point_set.Get(i), val);
+        }
+    };
+
+    Map.ClearBySet = function (point_set) {
+        Map.SetSet(point_set, 0);
+        return point_set.Length();
     };
 
     Map.Foreach = function (func) {
@@ -315,13 +351,113 @@ function WeiqiMap(size) {
     return Map;
 }
 
+
+/**
+ * @return {null}
+ */
+var GetUp = function (map, point, player) {
+    var p = point.GetUp();
+    if( map.HasPoint(p) && map.Get(p) === player ) {
+        return p;
+    }
+    return null;
+};
+
+/**
+ * @return {null}
+ */
+var GetDown = function (map, point, player) {
+    var p = point.GetDown();
+    if( map.HasPoint(p) && map.Get(p) === player ) {
+        return p;
+    }
+    return null;
+};
+
+/**
+ * @return {null}
+ */
+var GetLeft = function (map, point, player) {
+    var p = point.GetLeft();
+    if( map.HasPoint(p) && map.Get(p) === player ) {
+        return p;
+    }
+    return null;
+};
+
+/**
+ * @return {null}
+ */
+var GetRight = function (map, point, player) {
+    var p = point.GetRight();
+    if( map.HasPoint(p) && map.Get(p) === player ) {
+        return p;
+    }
+    return null;
+};
+
+var GetNear = function (map, point, player) {
+    var point_list = [];
+    var up = GetUp(map, point, player);
+    if (up) {
+        point_list.push(up);
+    }
+    var down = GetDown(map, point, player);
+    if (down) {
+        point_list.push(down);
+    }
+    var left = GetLeft(map, point, player);
+    if (left) {
+        point_list.push(left);
+    }
+    var right = GetRight(map, point, player);
+    if (right) {
+        point_list.push(right);
+    }
+    return point_list;
+};
+
+var SearchAround = function(map, point, player, pointset) {
+    var pointlist = GetNear(map, point, player);
+    var newpoints = pointset.AddList(pointlist);
+    for(var i = 0; i<newpoints.length; i++) {
+        SearchAround(map, newpoints[i], player, pointset);
+    }
+};
+
+var GetAround = function(map, point, player) {
+    var pointset = WeiqiPointSet();
+    pointset.Add(point);
+    SearchAround(map, point, player, pointset);
+    return pointset;
+};
+
+var GetLives = function(map, pointset ) {
+    var lives = WeiqiPointSet();
+    for( var i = 0 ; i<pointset.Length(); i++) {
+        var points = GetNear(map, pointset.Get(i), WEIQI_LIFE);
+        if (points.length > 0 )
+            lives.AddList(points);
+    }
+    for( var i = 0 ; i<pointset.Length(); i++) {
+        lives.Del(pointset.Get(i));
+    }
+    return lives;
+};
+
 //创建一步棋。
 //MAP 必须。
 //POINT 可选，无值则PASS一手。
 //PLAYER 可选，无值则PASS一手。
+/**
+ * @return {null}
+ */
 function WeiqiMove(map, point, player) {
     var Move = {};
     var Map = map;
+    if (!map ) {
+        return null;
+    }
     var Point = point;
     var Player = player;
 
@@ -341,6 +477,68 @@ function WeiqiMove(map, point, player) {
         return Player;
     };
 
+
+    if (Point && Point.Bool() && Player>0 && Map.HasPoint(Point)) {
+        if (Map.HasPlayer(Point)) {
+            return null;
+        }
+        Map.Set(Point, Player);
+
+        var other_player = ChangePlayer(Player);
+        var eats = 0;
+
+        var up = Point.GetUp();
+        if (Map.HasPoint(up)) {
+            var other_up = GetAround(Map, up, other_player);
+            var other_up_lives = GetLives(Map, other_up);
+            if (other_up_lives.Length()===0) {
+                eats += Map.ClearBySet(other_up, 0);
+            }
+        }
+
+        var down = Point.GetDown();
+        if (Map.HasPoint(down)) {
+            var other_down = GetAround(Map, down, other_player);
+            var other_down_lives = GetLives(Map, other_down);
+            if (other_down_lives.Length()===0) {
+                eats += Map.ClearBySet(other_down, 0);
+            }
+        }
+
+        var left = Point.GetLeft();
+        if (Map.HasPoint(left)) {
+            var other_left = GetAround(Map, left, other_player);
+            var other_left_lives = GetLives(Map, other_left);
+            if (other_left_lives.Length()===0) {
+                eats += Map.ClearBySet(other_left, 0);
+            }
+        }
+
+        var right = Point.GetRight();
+        if (Map.HasPoint(right)) {
+            var other_right = GetAround(Map, right, other_player);
+            var other_right_lives = GetLives(Map, other_right);
+            if (other_right_lives.Length()===0) {
+                eats += Map.ClearBySet(other_right, 0);
+            }
+        }
+
+        var mypointset = GetAround(Map, Point, Player);
+        var mypointlives = GetLives(Map, mypointset);
+
+        if (eats > 0) {
+
+        } else {
+            if (mypointlives.Length() === 0) {
+                return null;
+            }
+        }
+        console.log('棋形：', mypointset.Str());
+        console.log('生命：', mypointlives.Str());
+    }
+
+
+
     return Move;
 }
 
@@ -355,20 +553,21 @@ function WeiqiUnit(map, next_player) {
         return Moves[Moves.length-1];
     };
 
+    /**
+     * @return {boolean}
+     */
     Unit.Move = function (point, player) {
-		console.log(point.Str());
+		console.log('落子', point.Str());
         if (!player) {
             player = NextPlayer;
         }
-        var lastmap = Unit.GetLastMove().GetMap().Copy();
-		var set = lastmap.GetAroundPointSetByPlayer(point, player);
-		console.log("棋子：", set.Str());
-		var lives = lastmap.GetLivesByPointSet(set);
-		console.log("生命：", lives.Str());
-        lastmap.Set(point, player);
-        var move = WeiqiMove(lastmap, point, player);
-        Moves.push(move);
-        NextPlayer = player === 1 ? 2: 1;
+        var move = WeiqiMove(Unit.GetLastMove().GetMap().Copy(), point, player);
+        if (move) {
+            Moves.push(move);
+            NextPlayer = player === 1 ? 2: 1;
+            return true;
+        }
+        return false;
     };
 
     Unit.Goto = function (number) {

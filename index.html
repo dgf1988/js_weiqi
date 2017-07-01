@@ -21,12 +21,13 @@
 		ui.Load();
 		ui.OnMove = function (x, y) {
 		 var point = WeiqiPoint(x, y);
-		 Unit.Move(point);
-		 ui.Draw();
-		 var map = Unit.GetLastMove().GetMap();
-		 map.Foreach(function (p, player) {
-			 ui.DrawChessPiece(p.X(), p.Y(), player);
-		 });
+		 if (Unit.Move(point)) {
+             ui.Draw();
+             var map = Unit.GetLastMove().GetMap();
+             map.Foreach(function (p, player) {
+                 ui.DrawChessPiece(p.X(), p.Y(), player);
+             });
+         }
 		};
  </script>
 </body>
