@@ -11,12 +11,18 @@ var WEIQI_MIN_SIZE = 9;
 var WEIQI_DEFAULT_SIZE = 19;
 var WEIQI_MAX_SIZE = 26;
 
+/**
+ *
+ * 点的计算。
+ * 参数必须。
+ */
 function WeiqiPoint(x, y) {
     var Point = {};
     var X = x;
     var Y = y;
 
     /**
+	 * 检测对象是否有值。
      * @return {boolean}
      */
     Point.Bool = function () {
@@ -36,26 +42,30 @@ function WeiqiPoint(x, y) {
     Point.Equals = function (point) {
 		return point.X() === X && point.Y() === Y;
 	};
-
+	//复制
     Point.Copy = function () {
         return WeiqiPoint(X, Y);
     };
-
+	//向上取一点。
     Point.GetUp = function () {
         return WeiqiPoint(X, Y-1);
     };
 
+	//向下取一点。
     Point.GetDown = function () {
         return WeiqiPoint(X, Y+1);
     };
 
+	//向左取一点。
     Point.GetLeft = function () {
         return WeiqiPoint(X-1, Y);
     };
 
+	//向右取一点。
     Point.GetRight = function () {
         return WeiqiPoint(X+1, Y);
     };
+	//字符串化。
 	Point.Str = function() {
 		return "["+X+","+Y+"]";
 	};
@@ -63,10 +73,15 @@ function WeiqiPoint(x, y) {
     return Point;
 }
 
+//参数可选。
 function WeiqiPointSet(points) {
 	var Set = {};
 	
 	var Data = [];
+	
+	Set.Bool = function () {
+		return Data.length > 0;
+	};
 	
 	Set.Length = function () {
 		return Data.length;
@@ -104,7 +119,7 @@ function WeiqiPointSet(points) {
     /**
      * @return {number}
      */
-    Set.AddMany = function (points) {
+    Set.AddList = function (points) {
 		var news = [];
 		for(var i = 0 ; i < points.length; i++) {
 			if (Set.Add(points[i])) {
@@ -113,7 +128,7 @@ function WeiqiPointSet(points) {
 		}
 		return news;
 	};
-	Set.Union = function (pointset) {
+	Set.AddSet = function (pointset) {
 		var news = [];
 		for(var i = 0 ; i < pointset.Length(); i++) {
 			if (Set.Add(pointset.Get(i))) {
@@ -122,7 +137,6 @@ function WeiqiPointSet(points) {
 		}
 		return news;
 	};
-	
 	Set.CopyToList = function () {
 		var pointlist = [];
 		for( var i = 0 ; i<Data.length; i++) {
@@ -137,13 +151,16 @@ function WeiqiPointSet(points) {
 		}
 		return items.join();
 	};
-	if (points) {
-		Set.AddMany(points);
+	
+	//可以使用列表做初始化。
+	if (points && points.length > 0) {
+		Set.AddList(points);
 	}
 	
 	return Set;
 }
 
+//参数可选。
 function WeiqiMap(size) {
     var Map = {};
 
@@ -167,6 +184,7 @@ function WeiqiMap(size) {
         return point.X() < Size && point.Y() < Size && point.X() >= 0 && point.Y() >= 0;
     };
 
+	//初始化数据。
     var Data = [];
     for( var x = 0; x < Size; x ++) {
         var row = [];
@@ -182,10 +200,6 @@ function WeiqiMap(size) {
 
     Map.Set = function (point, player) {
         Data[point.X()][point.Y()] = player;
-    };
-
-    Map.Move = function (point, player) {
-
     };
 
     Map.Foreach = function (func) {
@@ -272,7 +286,7 @@ function WeiqiMap(size) {
 	
 	Map.SearchAroundPointSetByPlayer = function(point, player, pointset) {
 		var pointlist = Map.GetNearPointListByPlayer(point, player);
-		var newpoints = pointset.AddMany(pointlist);
+		var newpoints = pointset.AddList(pointlist);
 		for(var i = 0; i<newpoints.length; i++) {
 			Map.SearchAroundPointSetByPlayer(newpoints[i], player, pointset);
 		}
@@ -290,7 +304,7 @@ function WeiqiMap(size) {
 		for( var i = 0 ; i<pointset.Length(); i++) {
 			var points = Map.GetNearPointListByPlayer(pointset.Get(i), WEIQI_LIFE);
 			if (points.length > 0 )
-				lives.AddMany(points);
+				lives.AddList(points);
 		}
 		for( var i = 0 ; i<pointset.Length(); i++) {
 			lives.Del(pointset.Get(i));
@@ -301,6 +315,10 @@ function WeiqiMap(size) {
     return Map;
 }
 
+//创建一步棋。
+//MAP 必须。
+//POINT 可选，无值则PASS一手。
+//PLAYER 可选，无值则PASS一手。
 function WeiqiMove(map, point, player) {
     var Move = {};
     var Map = map;
@@ -322,53 +340,6 @@ function WeiqiMove(map, point, player) {
     Move.GetPlayer = function () {
         return Player;
     };
-
-    /**
-     * @return {null}
-     */
-    Move.GetUpPointByPlayer = function () {
-        var p = Point.GetUp();
-        if (Map.HasPoint(p)) {
-            return p;
-        }
-        return null;
-    };
-
-    /**
-     * @return {null}
-     */
-    Move.GetDownPointByPlayer = function () {
-        var p = Point.GetDown();
-        if (Map.HasPoint(p)) {
-            return p;
-        }
-        return null;
-    };
-
-    /**
-     * @return {null}
-     */
-    Move.GetLeftPointByPlayer = function () {
-        var p = Point.GetLeft();
-        if (Map.HasPoint(p)) {
-            return p;
-        }
-        return null;
-    };
-
-    /**
-     * @return {null}
-     */
-    Move.GetRightPointByPlayer = function () {
-        var p = Point.GetRight();
-        if (Map.HasPoint(p)) {
-            return p;
-        }
-        return null;
-    };
-	Move.SearchAroundPointSetByPlayer = function() {
-		
-	}
 
     return Move;
 }
