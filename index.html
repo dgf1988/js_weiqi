@@ -23,7 +23,7 @@
 		 var point = WeiqiPoint(x, y);
 		 if (Unit.Move(point)) {
              ui.Draw();
-             var map = Unit.GetLastMove().GetMap();
+             var map = Unit.GetTree().Get(-1).GetMap();
              map.Foreach(function (p, player) {
                  ui.DrawChessPiece(p.X(), p.Y(), player);
              });
