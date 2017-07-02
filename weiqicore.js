@@ -455,12 +455,9 @@ var GetLives = function(map, pointset ) {
 function WeiqiMove(map, point, player) {
     var Move = {};
     var Map = map;
-    if (!map ) {
-        return null;
-    }
     var Point = point;
     var Player = player;
-	var Tree = null;
+    var Tree = null;
 	
     Move.GetMap = function () {
         return Map;
@@ -552,34 +549,19 @@ function WeiqiMoveTree() {
 	var Data = [];
 	
 	Tree.Add = function (move) {
-		if(move) {
-			Data.push(move);	
-			return true;
-		}
-		return false;
+		Data.push(move);
 	};
 	
 	Tree.Del = function (i) {
-		if( isNan(i) && i >=0 && i<Data.length) {
-			Data.splice(i, 1);
-			return true;
-		}
-		return false;
+		Data.splice(i, 1);
 	};
 	
 	Tree.Set = function (i, move) {
-		if( isNan(i) && i >=0 && i<Data.length && move) {
-			Data[i] = move;
-			return true;
-		}
-		return false;
+		Data[i] = move;
 	};
 	
 	Tree.Get = function (i) {
-		if( isNan(i) && i >=0 && i<Data.length) {
-			return Data[i];
-		}
-		return null;
+		return Data[i];
 	};
 	
 	Tree.Bool = function () {
