@@ -460,11 +460,8 @@ function WeiqiMove(map, point, player) {
     }
     var Point = point;
     var Player = player;
-
-    Move.Bool = function () {
-        return Map && Point && !isNaN(Player);
-    };
-
+	var Tree = null;
+	
     Move.GetMap = function () {
         return Map;
     };
@@ -476,6 +473,14 @@ function WeiqiMove(map, point, player) {
     Move.GetPlayer = function () {
         return Player;
     };
+	
+	Move.SetTree = function (tree) {
+		Tree = tree;
+	};
+	
+	Move.HasTree = function () {
+		return Tree != null && Tree.Bool();
+	};
 
 
     if (Point && Point.Bool() && Player>0 && Map.HasPoint(Point)) {
@@ -540,6 +545,52 @@ function WeiqiMove(map, point, player) {
 
 
     return Move;
+}
+
+function WeiqiMoveTree() {
+	var Tree = {};
+	var Data = [];
+	
+	Tree.Add = function (move) {
+		if(move) {
+			Data.push(move);	
+			return true;
+		}
+		return false;
+	};
+	
+	Tree.Del = function (i) {
+		if( isNan(i) && i >=0 && i<Data.length) {
+			Data.splice(i, 1);
+			return true;
+		}
+		return false;
+	};
+	
+	Tree.Set = function (i, move) {
+		if( isNan(i) && i >=0 && i<Data.length && move) {
+			Data[i] = move;
+			return true;
+		}
+		return false;
+	};
+	
+	Tree.Get = function (i) {
+		if( isNan(i) && i >=0 && i<Data.length) {
+			return Data[i];
+		}
+		return null;
+	};
+	
+	Tree.Bool = function () {
+		return Data.length > 0;
+	};
+	
+	Tree.Length = function () {
+		return Data.length;
+	};
+	
+	return Tree;
 }
 
 function WeiqiUnit(map, next_player) {
