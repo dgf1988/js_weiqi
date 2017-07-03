@@ -20,6 +20,30 @@ var NextPlayer = function (player) {
     return null;
 };
 
+var WeiqiPlayers = function (number) {
+	var Players = {};
+	var Number = number;
+	if (isNan(Number) || Number <=0) return null;
+	var Player = 1;
+	
+	Players.GetNumber = function () {
+		return Number;
+	};
+	Players.Get = function() {
+		return Player;
+	};
+	Players.Next = function () {
+		Player = Player + 1;
+		if (Player > Number ) {
+			Player = 1;
+		}
+		return Players;
+	};
+	
+	return Players;
+
+};
+
 /**
  *
  * 点的计算。
@@ -534,15 +558,23 @@ function WeiqiMoveTree() {
 	return Tree;
 }
 
-function WeiqiDrive(size) {
+function WeiqiDrive(map, players) {
     var Drive = {};
 
-    var MoveTree = WeiqiMoveTree();
-
-    Drive.Init = function (map) {
-
-    };
-
+	var Players = players;
+    var Moves = WeiqiMoveTree();
+	Moves.Add(WeiqiMove(map));
+	
+	Drive.Move = function (point, player) {
+		
+	};
+	Drive.Get = function (number) {};
+	Drive.Delete = function (number) {};
+	Drive.AddBranch = function () {};
+	Drive.DelBranch = function () {};
+	Drive.ToSgf = function () {};
+	
+	
     return Drive;
 }
 
