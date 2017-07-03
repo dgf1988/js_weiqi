@@ -13,21 +13,23 @@
  <script src="weiqicore.js" type="text/javascript"></script>
  <script src="weiqi-ui.js" type="text/javascript"></script>
  <script language="JavaScript">
-		var Unit = WeiqiUnit(WeiqiMap(19), WEIQI_BLACK);
+		var weiqi = WeiqiDrive();
 		var ui = WeiqiCanvas('weiqi');
 		ui.AddBackgroundImageSrcList(['bg.png', 'mw1.png', 'mw2.png', 'mw3.png']);
 		ui.SetChessPieceImageSrc('b.png', 'w.png');
 		ui.SetBackgroundImage(2);
 		ui.Load();
 		ui.OnMove = function (x, y) {
-		 var point = WeiqiPoint(x, y);
-		 if (Unit.Move(point)) {
-             ui.Draw();
-             var map = Unit.GetTree().Get(-1).GetMap();
-             map.Foreach(function (p, player) {
-                 ui.DrawChessPiece(p.X(), p.Y(), player);
-             });
-         }
+			var point = WeiqiPoint(x, y);
+			if (weiqi.Move(point)) {
+				ui.Draw();
+				var move = weiqi.GetMove();
+				var map = move.GetMap();
+				map.Foreach(function (p, player) {
+					ui.DrawChessPiece(p.X(), p.Y(), player);
+				});
+				console.log('draw()');
+			}
 		};
  </script>
 </body>

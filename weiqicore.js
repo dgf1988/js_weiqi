@@ -4,9 +4,10 @@
  */
 
 var WEIQI_ERROR = -1;
-var WEIQI_LIFE = 0 ;
+var WEIQI_LIFE = 0;
 var WEIQI_BLACK = 1;
 var WEIQI_WHITE = 2;
+var WEIQI_DEFAULT_PLAYER_NUMBER = 2;
 var WEIQI_MIN_SIZE = 9;
 var WEIQI_DEFAULT_SIZE = 19;
 var WEIQI_MAX_SIZE = 26;
@@ -20,29 +21,6 @@ var NextPlayer = function (player) {
     return null;
 };
 
-var WeiqiPlayers = function (number) {
-	var Players = {};
-	var Number = number;
-	if (isNan(Number) || Number <=0) return null;
-	var Player = 1;
-	
-	Players.GetNumber = function () {
-		return Number;
-	};
-	Players.Get = function() {
-		return Player;
-	};
-	Players.Next = function () {
-		Player = Player + 1;
-		if (Player > Number ) {
-			Player = 1;
-		}
-		return Players;
-	};
-	
-	return Players;
-
-};
 
 /**
  *
@@ -73,80 +51,80 @@ function WeiqiPoint(x, y) {
      * @return {boolean}
      */
     Point.Equals = function (point) {
-		return point.X() === X && point.Y() === Y;
-	};
-	//复制
+        return point.X() === X && point.Y() === Y;
+    };
+    //复制
     Point.Copy = function () {
         return WeiqiPoint(X, Y);
     };
-	//向上取一点。
+    //向上取一点。
     Point.GetUp = function () {
-        return WeiqiPoint(X, Y-1);
+        return WeiqiPoint(X, Y - 1);
     };
 
-	//向下取一点。
+    //向下取一点。
     Point.GetDown = function () {
-        return WeiqiPoint(X, Y+1);
+        return WeiqiPoint(X, Y + 1);
     };
 
-	//向左取一点。
+    //向左取一点。
     Point.GetLeft = function () {
-        return WeiqiPoint(X-1, Y);
+        return WeiqiPoint(X - 1, Y);
     };
 
-	//向右取一点。
+    //向右取一点。
     Point.GetRight = function () {
-        return WeiqiPoint(X+1, Y);
+        return WeiqiPoint(X + 1, Y);
     };
-	//字符串化。
+    //字符串化。
     /**
      * @return {string}
      */
-    Point.Str = function() {
-		return "["+X+","+Y+"]";
-	};
+    Point.Str = function () {
+        return "[" + X + "," + Y + "]";
+    };
 
     return Point;
 }
 
 //参数可选。
 function WeiqiPointSet(points) {
-	var Set = {};
-	
-	var Data = [];
+    var Set = {};
+
+    var Data = [];
 
     /**
      * @return {boolean}
      */
     Set.Bool = function () {
-		return Data.length > 0;
-	};
-	
-	Set.Length = function () {
-		return Data.length;
-	};
+        return Data.length > 0;
+    };
+
+    Set.Length = function () {
+        return Data.length;
+    };
     /**
      * @return {boolean}
      */
     Set.Add = function (point) {
-		for( var i = 0 ; i < Data.length; i++) {
-			if ( point.Equals(Data[i])) return false;
-		}
-		Data.push(point) ;
-		return true;
-	};
+        for (var i = 0; i < Data.length; i++) {
+            if (point.Equals(Data[i])) return false;
+        }
+        Data.push(point);
+        return true;
+    };
     /**
      * @return {boolean}
      */
     Set.Del = function (point) {
-		for( var i = 0 ; i < Data.length; i++) {
-			if ( point.Equals(Data[i])){
-				Data.splice(i, 1);
-				return true;
-			}
-		}
-		return false;
-	};
+        for (var i = 0; i < Data.length; i++) {
+            if (point.Equals(Data[i])) {
+                Data.splice(i, 1);
+                return true;
+            }
+        }
+        return false;
+    };
 
     Set.Get = function (i) {
         return Data[i];
@@ -156,60 +134,68 @@ function WeiqiPointSet(points) {
      * @return {boolean}
      */
     Set.Has = function (point) {
-		for( var i = 0 ; i < Data.length; i++) {
-			if ( point.Equals(Data[i])){
-				return true;
-			}
-		}
-		return false;
-	};
+        for (var i = 0; i < Data.length; i++) {
+            if (point.Equals(Data[i])) {
+                return true;
+            }
+        }
+        return false;
+    };
     /**
      * @return {number}
      */
     Set.AddList = function (points) {
-		var news = [];
-		for(var i = 0 ; i < points.length; i++) {
-			if (Set.Add(points[i])) {
-				news.push(points[i]);
-			}
-		}
-		return news;
-	};
+        var news = [];
+        for (var i = 0; i < points.length; i++) {
+            if (Set.Add(points[i])) {
+                news.push(points[i]);
+            }
+        }
+        return news;
+    };
 
-	Set.AddSet = function (pointset) {
-		var news = [];
-		for(var i = 0 ; i < pointset.Length(); i++) {
-			if (Set.Add(pointset.Get(i))) {
-				news.push(pointset.Get(i));
-			}
-		}
-		return news;
-	};
+    Set.AddSet = function (pointset) {
+        var news = [];
+        for (var i = 0; i < pointset.Length(); i++) {
+            if (Set.Add(pointset.Get(i))) {
+                news.push(pointset.Get(i));
+            }
+        }
+        return news;
+    };
 
-	Set.CopyToList = function () {
-		var pointlist = [];
-		for( var i = 0 ; i<Data.length; i++) {
-			pointlist.push(Data[i]);
-		}
-		return pointlist;
-	};
+    Set.Copy = function() {
+        var set = WeiqiPointSet();
+        for (var i = 0; i < Data.length; i++) {
+            set.Add(Data[i]);
+        }
+        return set;
+    };
+
+    Set.CopyToList = function () {
+        var pointlist = [];
+        for (var i = 0; i < Data.length; i++) {
+            pointlist.push(Data[i]);
+        }
+        return pointlist;
+    };
     /**
      * @return {string}
      */
-    Set.Str = function (){
-		var items = [];
-		for( var i = 0 ; i<Data.length; i++) {
-			items.push(Data[i].Str());
-		}
-		return items.join();
-	};
-	
-	//可以使用列表做初始化。
-	if (points && points.length > 0) {
-		Set.AddList(points);
-	}
-	
-	return Set;
+    Set.Str = function () {
+        var items = [];
+        for (var i = 0; i < Data.length; i++) {
+            items.push(Data[i].Str());
+        }
+        return items.join();
+    };
+
+    //可以使用列表做初始化。
+    if (points && points.length > 0) {
+        Set.AddList(points);
+    }
+
+    return Set;
 }
 
 //参数可选。
@@ -218,19 +204,12 @@ function WeiqiMap(size) {
 
     //棋盘大小设置。
     var Size = size;
-    if (isNaN(Size)) {
-        Size = WEIQI_DEFAULT_SIZE;
-    } else if (Size < WEIQI_MIN_SIZE) {
-        Size = WEIQI_MIN_SIZE;
-    } else if (Size > WEIQI_MAX_SIZE) {
-        Size = WEIQI_MAX_SIZE;
-    }
-
     //初始化数据。
     var Data = [];
-    for( var x = 0; x < Size; x ++) {
+
+    for (var x = 0; x < Size; x++) {
         var row = [];
-        for( var y = 0; y < Size; y ++) {
+        for (var y = 0; y < Size; y++) {
             row.push(0);
         }
         Data.push(row);
@@ -250,25 +229,25 @@ function WeiqiMap(size) {
      * @return {boolean}
      */
     Map.HasPlayer = function (point) {
-        return Data[point.X()][point.Y()]  > 0;
+        return Data[point.X()][point.Y()] > 0;
     };
 
     Map.Get = function (point) {
         return Data[point.X()][point.Y()];
     };
 
-    Map.Set = function (point, player) {
-        Data[point.X()][point.Y()] = player;
+    Map.Set = function (point, val) {
+        Data[point.X()][point.Y()] = val;
     };
 
     Map.SetList = function (point_list, val) {
-        for( var i=0; i<point_list.length; i++) {
+        for (var i = 0; i < point_list.length; i++) {
             Map.Set(point_list[i], val);
         }
     };
 
     Map.SetSet = function (point_set, val) {
-        for( var i=0; i<point_set.Length(); i++) {
+        for (var i = 0; i < point_set.Length(); i++) {
             Map.Set(point_set.Get(i), val);
         }
     };
@@ -279,8 +258,8 @@ function WeiqiMap(size) {
     };
 
     Map.Foreach = function (func) {
-        for( var x = 0; x < Size; x ++) {
-            for( var y = 0; y < Size; y ++) {
+        for (var x = 0; x < Size; x++) {
+            for (var y = 0; y < Size; y++) {
                 var point = WeiqiPoint(x, y);
                 func(point, Map.Get(point));
             }
@@ -289,8 +268,8 @@ function WeiqiMap(size) {
 
     Map.Copy = function () {
         var map = WeiqiMap(Size);
-        Map.Foreach(function (point, player) {
-            map.Set(point, player);
+        Map.Foreach(function (point, val) {
+            map.Set(point, val);
         });
         return map;
     };
@@ -302,10 +281,10 @@ function WeiqiMap(size) {
         if (map.GetSize() !== Map.GetSize()) {
             return false;
         }
-        for( var x = 0; x < Size; x ++) {
-            for( var y = 0; y < Size; y ++) {
+        for (var x = 0; x < Size; x++) {
+            for (var y = 0; y < Size; y++) {
                 var point = WeiqiPoint(x, y);
-                if( map.Get(point) !== Map.Get(point)) {
+                if (map.Get(point) !== Map.Get(point)) {
                     return false;
                 }
             }
@@ -316,100 +295,144 @@ function WeiqiMap(size) {
     /**
      * @return {null}
      */
-    Map.GetUp = function (point, player) {
-		var p = point.GetUp();
-		if( Map.HasPoint(p) && Map.Get(p) === player ) {
-			return p;
-		}
-		return null;
-	};
+    Map.GetUp = function (point, val) {
+        var p = point.GetUp();
+        if (Map.HasPoint(p) && Map.Get(p) === val) {
+            return p;
+        }
+        return null;
+    };
 
     /**
      * @return {null}
      */
-    Map.GetDown = function (point, player) {
-		var p = point.GetDown();
-		if( Map.HasPoint(p) && Map.Get(p) === player ) {
-			return p;
-		}
-		return null;
-	};
+    Map.GetDown = function (point, val) {
+        var p = point.GetDown();
+        if (Map.HasPoint(p) && Map.Get(p) === val) {
+            return p;
+        }
+        return null;
+    };
 
     /**
      * @return {null}
      */
-    Map.GetLeft = function (point, player) {
-		var p = point.GetLeft();
-		if( Map.HasPoint(p) && Map.Get(p) === player ) {
-			return p;
-		}
-		return null;
-	};
+    Map.GetLeft = function (point, val) {
+        var p = point.GetLeft();
+        if (Map.HasPoint(p) && Map.Get(p) === val) {
+            return p;
+        }
+        return null;
+    };
 
     /**
      * @return {null}
      */
-    Map.GetRight = function (point, player) {
-		var p = point.GetRight();
-		if( Map.HasPoint(p) && Map.Get(p) === player ) {
-			return p;
-		}
-		return null;
-	};
+    Map.GetRight = function (point, val) {
+        var p = point.GetRight();
+        if (Map.HasPoint(p) && Map.Get(p) === val) {
+            return p;
+        }
+        return null;
+    };
 
-	Map.GetNear = function (point, player) {
-		var point_list = [];
-		var up = Map.GetUp(point, player);
-		if (up) {
-			point_list.push(up);
-		}
-		var down = Map.GetDown(point, player);
-		if (down) {
-			point_list.push(down);
-		}
-		var left = Map.GetLeft(point, player);
-		if (left) {
-			point_list.push(left);
-		}
-		var right = Map.GetRight(point, player);
-		if (right) {
-			point_list.push(right);
-		}
-		return point_list;
-	};
-	
-	Map.SearchAround = function(point, player, pointset) {
-		var near_list = Map.GetNear(point, player);
-		var new_list = pointset.AddList(near_list);
-		for(var i = 0; i < new_list.length; i++) {
-			Map.SearchAround(new_list[i], player, pointset);
-		}
-	};
-	
-	Map.GetAround = function(point, player) {
-		var pointset = WeiqiPointSet();
-		pointset.Add(point);
-		Map.SearchAround(point, player, pointset);
-		return pointset;
-	};
-	
-	Map.GetLives = function( pointset ) {
-		var lives = WeiqiPointSet();
-		for( var i = 0 ; i<pointset.Length(); i++) {
-			var points = Map.GetNear(pointset.Get(i), WEIQI_LIFE);
-			if (points.length > 0 )
-				lives.AddList(points);
-		}
+    Map.GetNear = function (point, val) {
+        var point_list = [];
+        var up = Map.GetUp(point, val);
+        if (up) {
+            point_list.push(up);
+        }
+        var down = Map.GetDown(point, val);
+        if (down) {
+            point_list.push(down);
+        }
+        var left = Map.GetLeft(point, val);
+        if (left) {
+            point_list.push(left);
+        }
+        var right = Map.GetRight(point, val);
+        if (right) {
+            point_list.push(right);
+        }
+        return point_list;
+    };
+
+    Map.SearchAround = function (point, val, pointset) {
+        var near_list = Map.GetNear(point, val);
+        var new_list = pointset.AddList(near_list);
+        for (var i = 0; i < new_list.length; i++) {
+            Map.SearchAround(new_list[i], val, pointset);
+        }
+    };
+
+    Map.GetAround = function (point, val) {
+        var pointset = WeiqiPointSet();
+        if (Map.Get(point) === val) {
+            pointset.Add(point);
+            Map.SearchAround(point, val, pointset);
+        }
+        return  pointset;
+    };
+
+    Map.GetLives = function (pointset) {
+        var lives = WeiqiPointSet();
+        for (var i = 0; i < pointset.Length(); i++) {
+            var points = Map.GetNear(pointset.Get(i), WEIQI_LIFE);
+            if (points.length > 0)
+                lives.AddList(points);
+        }
 		/* 
 		for( var i = 0 ; i<pointset.Length(); i++) {
 			lives.Del(pointset.Get(i));
 		}
 		*/
-		return lives;
-	};
-	
+        return lives;
+    };
+
     return Map;
 }
+
+//玩家控制器。
+//参数必选。
+function WeiqiPlayer(number) {
+    var Player = {};
+
+    var Number = number;
+    var Val = 1;
+
+    Player.GetNumber = function () {
+        return Number;
+    };
+    Player.Get = function () {
+        return Val;
+    };
+    Player.Set = function (val) {
+        Val = val;
+    };
+    Player.Next = function () {
+        Val ++;
+        if (Val > Number) {
+            Val = 1;
+        }
+    };
+    Player.OtherList = function () {
+        var list = [];
+        for ( var i = 1 ; i <= Number; i++) {
+            if ( i === Val) {
+                continue;
+            }
+            list.push(i);
+        }
+        return list;
+    };
+    Player.Copy = function () {
+        var player = WeiqiPlayer(Number);
+        player.Set(Player.Get());
+        return player;
+    };
+
+    return Player;
+};
 
 //创建一步棋。
 //MAP 必须。
@@ -423,8 +446,8 @@ function WeiqiMove(map, point, player) {
     var Map = map;
     var Point = point;
     var Player = player;
-    var Tree = null;
-	
+    var BranchList = [];
+
     Move.GetMap = function () {
         return Map;
     };
@@ -436,88 +459,92 @@ function WeiqiMove(map, point, player) {
     Move.GetPlayer = function () {
         return Player;
     };
-	
-	Move.SetTree = function (tree) {
-		Tree = tree;
-	};
+
+    Move.BranchList = function () {
+        return BranchList;
+    };
 
     /**
      * @return {boolean}
      */
-    Move.HasTree = function () {
-		return Tree  && Tree.Bool();
-	};
+    Move.HasBranch = function () {
+        return BranchList && BranchList.length > 0;
+    };
 
-	if (!Map ) {
-		return null;
-	}
-    if (Point && Point.Bool() && Player>0 && Map.HasPoint(Point)) {
+    if (!Map) {
+        return null;
+    }
+    if (Point && Point.Bool() && Map.HasPoint(Point)) {
         if (Map.HasPlayer(Point)) {
             return null;
         }
-        Map.Set(Point, Player);
+        Map.Set(Point, Player.Get());
 
-        var other_player = NextPlayer(Player);
-        var eat_number = 0;
+        var other_player_list = Player.OtherList();
+        console.log(other_player_list);
+        var eat_count = 0;
+        for( var i = 0; i<other_player_list; i++) {
+            
+            var other_player = other_player_list[i];
+            var eat_number = 0;
 
-        var up = Point.GetUp();
-        if (Map.HasPoint(up)) {
-            var other_up = Map.GetAround(up, other_player);
-            var other_up_lives = Map.GetLives(other_up);
-            if (other_up_lives.Length()===0) {
-                eat_number += Map.ClearSet(other_up);
+            var up = Point.GetUp();
+            if (Map.HasPoint(up)) {
+                var other_up = Map.GetAround(up, other_player);
+                console.log(other_up.Str());
+                var other_up_lives = Map.GetLives(other_up);
+                console.log(other_up_lives.Str());
+                if (other_up_lives.Length() === 0) {
+                    eat_number += Map.ClearSet(other_up);
+                }
             }
-        }
 
-        var down = Point.GetDown();
-        if (Map.HasPoint(down)) {
-            var other_down = Map.GetAround(down, other_player);
-            var other_down_lives = Map.GetLives(other_down);
-            if (other_down_lives.Length()===0) {
-                eat_number += Map.ClearSet(other_down);
+            var down = Point.GetDown();
+            if (Map.HasPoint(down)) {
+                var other_down = Map.GetAround(down, other_player);
+                var other_down_lives = Map.GetLives(other_down);
+                if (other_down_lives.Length() === 0) {
+                    eat_number += Map.ClearSet(other_down);
+                }
             }
-        }
 
-        var left = Point.GetLeft();
-        if (Map.HasPoint(left)) {
-            var other_left = Map.GetAround(left, other_player);
-            var other_left_lives = Map.GetLives(other_left);
-            if (other_left_lives.Length()===0) {
-                eat_number += Map.ClearSet(other_left);
+            var left = Point.GetLeft();
+            if (Map.HasPoint(left)) {
+                var other_left = Map.GetAround(left, other_player);
+                var other_left_lives = Map.GetLives(other_left);
+                if (other_left_lives.Length() === 0) {
+                    eat_number += Map.ClearSet(other_left);
+                }
             }
-        }
 
-        var right = Point.GetRight();
-        if (Map.HasPoint(right)) {
-            var other_right = Map.GetAround(right, other_player);
-            var other_right_lives = Map.GetLives(other_right);
-            if (other_right_lives.Length()===0) {
-                eat_number += Map.ClearSet(other_right);
+            var right = Point.GetRight();
+            if (Map.HasPoint(right)) {
+                var other_right = Map.GetAround(right, other_player);
+                var other_right_lives = Map.GetLives(other_right);
+                if (other_right_lives.Length() === 0) {
+                    eat_number += Map.ClearSet(other_right);
+                }
             }
+            eat_count += eat_number;
         }
-
-        var mypointset = Map.GetAround(Point, Player);
+        var mypointset = Map.GetAround(Point, Player.Get());
         var mypointlives = Map.GetLives(mypointset);
 
-        if (eat_number > 0) {
+        if (eat_count > 0) {
 
         } else {
             if (mypointlives.Length() === 0) {
                 return null;
             }
         }
-        console.log('棋形：', mypointset.Str());
-        console.log('生命：', mypointlives.Str());
     }
-
-
 
     return Move;
 }
 
 function WeiqiMoveTree() {
-	var Tree = {};
-	var Data = [];
+    var Tree = {};
+    var Data = [];
 
     /**
      * @return {boolean}
@@ -529,91 +556,106 @@ function WeiqiMoveTree() {
     Tree.Length = function () {
         return Data.length;
     };
-	
-	Tree.Add = function (move) {
-		Data.push(move);
-	};
-	
-	Tree.Del = function (i) {
-		Data.splice(i, 1);
-	};
-	
-	Tree.Set = function (i, move) {
-		Data[i] = move;
-	};
+
+    Tree.Add = function (move) {
+        Data.push(move);
+    };
+
+    Tree.Del = function (i) {
+        Data.splice(i, 1);
+    };
+
+    Tree.Set = function (i, move) {
+        Data[i] = move;
+    };
 
     /**
      * @return {null}
      */
     Tree.Get = function (i) {
-	    if (i<0) {
-	        i = Data.length+i;
+        if (i < 0) {
+            i = Data.length + i;
         }
-        if (i < 0 ) {
-	        return null;
+        if (i < 0) {
+            return null;
         }
-		return Data[i];
-	};
-	
-	return Tree;
+        return Data[i];
+    };
+
+    return Tree;
 }
 
-function WeiqiDrive(map, players) {
+//围棋驱动。
+//map 可选，默认为19大小的空图。
+//player_number 可选，默认为两个玩家。
+//返回一个对象，给交互层。
+function WeiqiDrive(start_map, player_number) {
     var Drive = {};
 
-	var Players = players;
-    var Moves = WeiqiMoveTree();
-	Moves.Add(WeiqiMove(map));
-	
-	Drive.Move = function (point, player) {
-		
-	};
-	Drive.Get = function (number) {};
-	Drive.Delete = function (number) {};
-	Drive.AddBranch = function () {};
-	Drive.DelBranch = function () {};
-	Drive.ToSgf = function () {};
-	
-	
-    return Drive;
-}
+    //默认值，19大小的空图和两个玩家。
+    if (!start_map) {
+        start_map = WeiqiMap(WEIQI_DEFAULT_SIZE);
+    }
+    if (isNaN(player_number) || player_number < WEIQI_DEFAULT_PLAYER_NUMBER) {
+        player_number = WEIQI_DEFAULT_PLAYER_NUMBER;
+    }
 
-function WeiqiUnit(map, next_player) {
-    var Unit = {};
+    var Player = WeiqiPlayer(player_number);
+    var BranchList = [];
+    var BranchPtr = 0;
+    var MovePtr = 0;
 
-    var Tree = WeiqiMoveTree();
-    var NextPlayer = next_player;
-    Tree.Add(WeiqiMove(map));
-    Unit.GetTree = function () {
-        return Tree;
-    };
-    /**
-     * @return {boolean}
-     */
-    Unit.Move = function (point, player) {
-		console.log('落子', point.Str());
-        if (!player) {
-            player = NextPlayer;
-        }
-        var move = WeiqiMove(Tree.Get(-1).GetMap().Copy(), point, player);
+    //初始化。
+    var master = WeiqiMoveTree();
+    master.Add(WeiqiMove(start_map, null, null));
+    BranchList.push(master);
+
+    //落子
+    //返回成功还是失败。
+    Drive.Move = function (point) {
+        var map = BranchList[BranchPtr].Get(MovePtr).GetMap().Copy();
+        var player = Player.Copy();
+        var move = WeiqiMove(map, point, player);
         if (move) {
-            var lastmove = Tree.Get(-2);
+            var lastmove = BranchList[BranchPtr].Get(0 - Player.GetNumber());
             if (lastmove) {
                 var lastmap = lastmove.GetMap();
                 if (lastmap.Equals(move.GetMap())) {
                     return false;
                 }
             }
-            Tree.Add(move);
-            NextPlayer = player === 1 ? 2: 1;
+            BranchList[BranchPtr].Add(move);
+            MovePtr ++;
+            Player.Next();
             return true;
         }
         return false;
     };
 
-    Unit.Goto = function (number) {
-        return Moves[number];
+    //获取指定一步棋。
+    Drive.GetMove = function (number) {
+        if (!number || isNaN(number)) {
+            return BranchList[BranchPtr].Get(MovePtr);
+        }
+        return BranchList[BranchPtr].Get(number);
     };
 
-    return Unit;
+    //悔棋，删除几步棋。
+    //返回成功还是失败。
+    Drive.DeleteMove = function (number) { };
+
+    //结束
+    Drive.Finish = function () { };
+
+    //输出棋谱
+    //返回字符串。
+    Drive.ToSgf = function () { };
+
+    //分支代码
+    Drive.AddBranch = function () { };
+    Drive.DelBranch = function () { };
+
+
+
+    return Drive;
 }
