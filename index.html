@@ -10,27 +10,29 @@
 <body style="text-align: center">
  <canvas id="weiqi"></canvas>
 
- <script src="weiqicore.js" type="text/javascript"></script>
- <script src="weiqi-ui.js" type="text/javascript"></script>
+ <input type="number" id="displaysize" value="25">
+ <input type="button" value="设置大小" id="setsize">
+ <input type="number" id="linenumber" value="19">
+ <input type="button" value="设置路数" id="setline">
+ <script src="weiqi.js" type="text/javascript"></script>
  <script language="JavaScript">
-		var weiqi = WeiqiDrive();
-		var ui = WeiqiCanvas('weiqi');
-		ui.AddBackgroundImageSrcList(['bg.png', 'mw1.png', 'mw2.png', 'mw3.png']);
-		ui.SetChessPieceImageSrc('b.png', 'w.png');
-		ui.SetBackgroundImage(2);
-		ui.Load();
-		ui.OnMove = function (x, y) {
-			var point = WeiqiPoint(x, y);
-			if (weiqi.Move(point)) {
-				ui.Draw();
-				var move = weiqi.GetMove();
-				var map = move.GetMap();
-				map.Foreach(function (p, player) {
-					ui.DrawChessPiece(p.X(), p.Y(), player);
-				});
-				console.log('draw()');
-			}
-		};
+		var weiqi = Weiqi('weiqi');
+        weiqi.Ui.AddBackgroundImageSrcList(['bg1.png', 'bg2.png', 'bg3.png']);
+        weiqi.Ui.SetChessPieceImageSrc('b.png', 'w.png');
+        weiqi.Ui.SetBackgroundImage(2);
+        weiqi.Ui.Load();
+        var set_size = document.getElementById('setsize');
+        var display_size = document.getElementById('displaysize');
+        set_size.onclick = function () {
+            weiqi.SetDisplaySize(parseInt(display_size.value));
+            weiqi.Ui.Draw();
+        };
+        var set_line = document.getElementById('setline');
+        var line_number = document.getElementById('linenumber');
+        set_line.onclick = function () {
+            weiqi.SetLineNumber(parseInt(line_number.value));
+            weiqi.Ui.Draw();
+        }
  </script>
 </body>
 </html>
