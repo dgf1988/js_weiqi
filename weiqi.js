@@ -19,3 +19,12 @@ function Tree() {
     return Tree;
 }
 
+function Game() {
+    var Game = {};
+    var Root = null;
+    var Father = null;
+    var Now = null;
+    
+    return Game;
+}
+
