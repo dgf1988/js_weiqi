@@ -1,11 +1,19 @@
 
 function Move() {
     var Move = {};
-    var Data = null;
-    var Moves = [];
-    Move.Next = function () {
-        if (Moves.length === 0 ) return null;
-        return Moves[0];
+    
+    var Point = null;
+    var Map = null;
+    
+    var Nexts = [];
+    
+    Move.GetNext = function (i) {
+        if (Nexts.length === 0 ) return null;
+        if (!i) i = 0;
+        return Nexts[i];
+    };
+    Move.AddNext = function (move) {
+        Nexts.push(move);
     };
     return Move;
 }
