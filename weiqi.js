@@ -1,24 +1,14 @@
 
-function Node() {
-    var Node = {};
+function Move() {
+    var Move = {};
     var Data = null;
-    var Trees = [];
-    return Node;
-}
-
-function Tree() {
-    var Tree = {};
-    var Nodes = [];
-
-    Tree.Add = function (note) {
-        Nodes.push(note);
+    var Moves = [];
+    Move.Next = function () {
+        if (Moves.length === 0 ) return null;
+        return Moves[0];
     };
-    Tree.Get = function (index) {
-        return Nodes[index];
-    };
-    return Tree;
+    return Move;
 }
-
 function Game() {
     var Game = {};
     var Root = null;
