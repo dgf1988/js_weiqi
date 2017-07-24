@@ -14,7 +14,6 @@ var WEIQI_MIN_SIZE = 9;
 var WEIQI_DEFAULT_SIZE = 19;
 var WEIQI_MAX_SIZE = 26;
 
-
 /**
  *
  * 点的计算。

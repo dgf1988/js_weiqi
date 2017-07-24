@@ -1,165 +1,293 @@
-var WEIQI_POINT_MAX = 26;
 
-
-function WeiqiPoint(x, y) {
+function Point(x, y) {
     this.x = x;
     this.y = y;
 }
-
-WeiqiPoint.prototype = {
-    constructor: WeiqiPoint,
-    ToString: function() {
-        return '['+this.x+','+this.y+']';
-    },
-    Bool: function() {
-        return !isNaN(this.x) && !isNaN(this.y) && this.x > 0 && this.y > 0 ; 
-    },
-    Equals: function(p) {
-        return p.x === this.x && p.y === this.y;
-    },
-    GetCopy: function() {
-        return new WeiqiPoint(this.x, this.y);
-    },
-    GetUp: function() {
-        return new WeiqiPoint(this.x, this.y-1);
-    },
-    GetDown: function() {
-        return new WeiqiPoint(this.x, this.y+1);
-    },
-    GetLeft: function() {
-        return new WeiqiPoint(this.x-1, this.y);
-    },
-    GetRight: function() {
-        return new WeiqiPoint(this.x+1, this.y);
-    }
+Point.prototype.Str = function(){
+    return '['+this.x+','+this.y+']';
+}
+Point.prototype.Clear = function() {
+    this.x = null;
+    this.y = null;
+}
+Point.prototype.Equals = function(p) {
+    return p.x === this.x && p.y === this.y;
+}
+Point.prototype.Bool = function() {
+    return !isNaN(this.x) && this.x >= 0 && !isNaN(this.y) && this.y >= 0;
+}
+Point.prototype.Clone = function() {
+    return new Point(this.x, this.y);
+}
+Point.prototype.GetUp = function() {
+    return new Point(this.x, this.y -1);
+}
+Point.prototype.GetDown = function() {
+    return new Point(this.x, this.y +1);
+}
+Point.prototype.GetLeft = function() {
+    return new Point(this.x-1, this.y);
+}
+Point.prototype.GetRight = function() {
+    return new Point(this.x+1, this.y);
 }
 
-var p1 = new WeiqiPoint();
-console.log(p1.ToString(), p1.Bool());
-var p2 = new WeiqiPoint(1, 2);
-console.log(p2.ToString(), p2.Bool());
-console.log(p2.Equals(new WeiqiPoint(1, 2)) === true );
-console.log(p2.Equals(new WeiqiPoint(2, 2)) === false);
-console.log(p2.Equals(p2.GetCopy()) === true);
-console.log(p2.ToString(), p2.GetDown().ToString(), p2.GetUp().ToString(), p2.GetLeft().ToString(), p2.GetRight().ToString());
-
-
-function WeiqiPointSet(ps) {
-    this.data = [];
-    if(ps && ps.length > 0) {
-        this.AddList(ps);
+function PointSet() {
+    this.set = [];
+    if(arguments.length>0) {
+        this.AddList(arguments);
     }
 }
-
-WeiqiPointSet.prototype = {
-    constructor: WeiqiPointSet,
-    Bool: function() {
-        return this.data.length > 0;
-    },
-    Length: function() {
-        return this.data.length;
-    },
-    Equals: function(pset){
-        if (pset.Length() === this.data.length) {
-            for (var i = 0; i<pset.Length(); i++) {
-                if(!this.Has(pset.Get(i))) {
+PointSet.prototype.Str= function() {
+    var str_item = [];
+    for( var i = 0; i< this.set.length; i++) {
+        str_item.push(this.set[i].Str());
+    }
+    return str_item.join(', ');
+}
+PointSet.prototype.Bool = function(){
+    return this.set.length > 0;
+}
+PointSet.prototype.Length = function(){
+    return this.set.length;
+}
+PointSet.prototype.Has = function(p) {
+    for( var i = 0; i<this.set.length; i++) {
+        if (this.set[i].Equals(p)) {
+            return true;
+        }
+    }
+    return false;
+}
+PointSet.prototype.Clone = function() {
+    var clone = new PointSet() ;
+    for( var i = 0; i < this.set.length; i ++) {
+        clone.set.push(this.set[i].Clone());
+    }
+    return clone;
+}
+PointSet.prototype.CloneToList = function() {
+    var clone = [];
+    for( var i = 0; i < this.set.length; i ++) {
+        clone.push(this.set[i].Clone());
+    }
+    return clone;
+}
+PointSet.prototype.Equals = function(pset) {
+    if( pset instanceof PointSet) {
+        if (pset.set.length === this.set.length) {
+            for(var i = 0; i< pset.set.length; i++) {
+                if(!this.Has(pset.set[i])) {
                     return false;
                 }
             }
             return true;
         }
+    }
+    return false;
+}
+PointSet.prototype.Add = function(p) {
+    if(this.Has(p)) {
         return false;
-    },
-    GetCopy: function() {
-        var copy = new WeiqiPointSet();
-        for( var i = 0; i<this.Length(); i++) {
-            copy.Add(this.Get(i));
+    }
+    this.set.push(p);
+    return true;
+}
+PointSet.prototype.AddList= function(plist) {
+    var news = [];
+    for( var i = 0; i< plist.length; i++) {
+        if( this.Add(plist[i])) {
+            news.push(plist[i])
         }
-        return copy;
-    },
-    GetCopyList: function() {
-        var copy = [];
-        for( var i = 0; i< this.Length(); i++) {
-            copy.push(this.Get(i));
+    }
+    return news;
+}
+PointSet.prototype.AddMany= function() {
+    var news = [];
+    for( var i = 0; i< arguments.length; i++) {
+        if( this.Add(arguments[i])) {
+            news.push(arguments[i])
         }
-        return copy;
-    },
-    Add: function(p) {
-        for( var i = 0; i< this.data.length; i++) {
-            if (this.data[i].Equals(p)) {
-                return false;
-            }
+    }
+    return news;
+}
+PointSet.prototype.Union = function(pset) {
+    var news = [];
+    for( var i = 0; i< pset.set.length; i++) {
+        if( this.Add(pset.set[i])) {
+            news.push(pset.set[i])
         }
-        this.data.push(p);
-        return true;
-    },
-    AddList: function(ps) {
-        var news = [];
-        for( var i = 0; i< ps.length; i++){
-            if (this.Add(ps[i])) {
-                news.push(ps[i]);
-            }
+    }
+    return news;
+}
+PointSet.prototype.Remove = function(p) {
+    for( var i = 0; i< this.set.length; i++) {
+        if( this.set[i].Equals(p)) {
+            this.set.splice(i, 1);
+            return true;
         }
-        return news;
-    },
-    Union: function(pset) {
-        var news = [];
-        for( var i = 0; i< pset.Length(); i++) {
-            var p = pset.Get(i);
-            if( this.Add(p)) {
-                news.push(p);
-            }
+    }
+    return false;
+}
+PointSet.prototype.Del = function(i) {
+    this.set.splice(i, 1);
+}
+PointSet.prototype.Set = function(i, p) {
+    this.set[i] = p;
+}
+PointSet.prototype.Find = function(p) {
+    for(var i = 0; i < this.set.length; i++) {
+        if (this.set[i].Equals(p)) {
+            return i;
         }
-        return news;
-    },
-    Del: function(i) {
-        this.data.splice(i, 1);
-    },
-    Set: function(i, p) {
-        this.data[i] = p;
-    },
-    Get: function(i) {
-        return this.data[i];
-    },
-    Has: function(p) {
-        for( var i = 0; i< this.data.length; i++) {
-            if ( this.data[i].Equals(p)) {
-                return true;
-            }
+    }
+    return null;
+}
+PointSet.prototype.Get = function(i) {
+    return this.set[i];
+}
+PointSet.prototype.Clear = function() {
+    this.set = [];
+}
+
+function Cell(player, number) {
+    this.player = player? player: 0;
+    this.number = number? number: 0;
+}
+
+Cell.prototype.Str= function(){
+    return '['+this.player+','+this.number+']';
+}
+Cell.prototype.Bool = function () {
+    return !isNaN(this.player) && this.player >= 0 && !isNaN(this.number) && this.number >= 0;
+}
+Cell.prototype.Equals = function(c) {
+    return c.player === this.player && c.number === this.number;
+}
+Cell.prototype.Clear = function() {
+    this.player = 0;
+    this.number = 0;
+}
+Cell.prototype.Clone = function() {
+    return new Cell(this.player, this.number);
+}
+
+function CellMap(size) {
+    this.size = size? size : 19;
+    this.data = [];
+
+    if(isNaN(this.size) || this.size <= 0 || this.size > 26) {
+        this.size = 19;
+    }
+    for( var x = 0; x< this.size; x++) {
+        var row = [];
+        for( var y = 0; y< this.size; y++) {
+            row.push(new Cell());
         }
-        return false;
-    },
-    ToString: function() {
-        var item = [];
-        for( var i = 0; i < this.data.length; i++) {
-            item.push(this.data[i].ToString());
+        this.data.push(row);
+    }
+}
+CellMap.prototype.Str = function() {
+    var rows = [];
+    for( var x = 0; x< this.size; x++) {
+        var items = [];
+        for( var y = 0; y< this.size; y++) {
+            items.push(this.data[x][y].Str());
         }
-        return item.join();
+        rows.push(items.join());
+    }
+    return rows.join('\r\n');
+}
+CellMap.prototype.StrPlayer = function() {
+    var rows = [];
+    for( var x = 0; x< this.size; x++) {
+        var items = [];
+        for( var y = 0; y< this.size; y++) {
+            items.push(this.data[x][y].player);
+        }
+        rows.push(items.join());
+    }
+    return rows.join('\r\n');
+}
+CellMap.prototype.StrNumber = function() {
+    var rows = [];
+    for( var x = 0; x< this.size; x++) {
+        var items = [];
+        for( var y = 0; y< this.size; y++) {
+            items.push(this.data[x][y].number);
+        }
+        rows.push(items.join());
+    }
+    return rows.join('\r\n');
+}
+CellMap.prototype.ForeachCell = function(f) {
+    for( var x = 0; x< this.size; x++) {
+        for( var y = 0; y< this.size; y++) {
+            f(this.data[x][y]);
+        }
+    }
+}
+CellMap.prototype.Clone = function() {
+    var map = new CellMap(this.size);
+    for( var x = 0; x < this.size; x ++) {
+        for( var y = 0; y < this.size; y ++) {
+            map.data[x][y] = this.data[x][y].Clone();
+        }
+    }
+    return map;
+}
+CellMap.prototype.Clear = function() {
+    for( var x = 0; x< this.size; x++) {
+        for( var y = 0; y< this.size; y++) {
+            this.data[x][y].Clear();
+        }
     }
 }
 
-var s1 = new WeiqiPointSet();
-console.log(s1.Bool() === false, s1.Length() === s1.data.length);
-console.log(s1.Add(new WeiqiPoint(1,1)) === true, s1.Add(new WeiqiPoint(1, 1)) === false);
-s1.Del(-1);
-console.log(s1.Length() === 0);
-var s2 = new WeiqiPointSet([new WeiqiPoint(1,1), new WeiqiPoint(2, 2), new WeiqiPoint(), new WeiqiPoint(1, 2)]);
-console.log(s2.ToString(), s2.Equals(s2.GetCopy()));
-s2.Del(-2);
-console.log(s2.ToString());
-
-function WeiqiCell(player, number) {
-    this.player = player;
-    this.number = number;
-}
-
-WeiqiCell.prototype = {
-    constructor: WeiqiCell,
-    Clear: function() {
-        this.player = 0;
-        this.number = 0;
-    },
-    Bool: function() {
-        
+CellMap.prototype.HasPoint = function(p) {
+    if( p && p instanceof Point && p.Bool() ) {
+        if( p.x < this.size && p.y < this.size) {
+            return true;
+        }
     }
+    return false;
 }
+CellMap.prototype.HasPlayer = function(p) {
+    return this.data[p.x][p.y].player > 0;
+}
+CellMap.prototype.HasNumber = function(p) {
+    return this.data[p.x][p.y].number > 0;
+}
+CellMap.prototype.HasPlayerAndNumber = function(p) {
+    return this.HasPlayer(p) && this.HasNumber(p);
+}
+
+CellMap.prototype.ClearByPoint = function(p) {
+    this.data[p.x][p.y].Clear();
+}
+CellMap.prototype.ClearByPointSet = function(pointset){
+    for( var i = 0; i< pointset.Length(); i++) {
+        var p = pointset.Get(i);
+        this.data[p.x][p.y].Clear();
+    }
+    return pointset.Length();
+}
+CellMap.prototype.ClearByPointList = function(pointlist ) {
+    for( var i = 0; i < pointlist.length; i++) {
+        var p = pointlist[i];
+        this.data[p.x][p.y].Clear();
+    }
+    return pointlist.length;
+}
+
+CellMap.prototype.SetCellByPoint = function(p, cell) {
+    this.data[p.x][p.y] = cell;
+}
+CellMap.prototype.SetPlayerByPoint = function(p, player) {
+    this.data[p.x][p.y].player = player;
+}
+CellMap.prototype.SetNumberByPoint = function(p, number) {
+    this.data[p.x][p.y].number = number;
+}
+
+
