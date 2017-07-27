@@ -11,12 +11,25 @@
  <canvas id="weiqi"></canvas>
 
  <input type="number" id="displaysize" value="25">
- <input type="button" value="设置大小" id="setsize">
+ <input type="button" value="设置大小" id="setsize" onclick="SetDisplaySize(event)">
  <input type="number" id="linenumber" value="19">
  <input type="button" value="设置路数" id="setline">
  <script src="weiqi.js" type="text/javascript"></script>
  <script language="JavaScript">
-     console.log(Weiqi);
+     Weiqi.DisplayId = 'weiqi';
+     Weiqi.DisplaySize = 25;
+     Weiqi.ChessPieceImage = ['b.png', 'w.png'];
+     Weiqi.ChessBoardBackgroundImage = ['bg1.png', 'bg2.png', 'bg3.png'];
+     Weiqi.ChessBoardBackgroundImageIndex = 0;
+
+     Weiqi.GamePlayer = 2;
+     Weiqi.GameSize = 19;
+     Weiqi.GameSgf = '';
+     
+     Weiqi.Init();
+     function SetDisplaySize (e) {
+         var orm = document.getElementById('displaysize');
+     }
  </script>
 </body>
 </html>

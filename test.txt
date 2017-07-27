@@ -1,15 +1,11 @@
-AddBackgroundImageSrcList
-SetBackgroundImage
-DrawBackgroundImage
+顶层功能列表
 
-SetChessBoardSize
-DrawChessBoard
+CANVAS ID 指定
 
+设置显示基数
+背景图片设置
+棋子样式设置
 
-OnMove
-SetChessPieceImageSrc
-DrawChessPiece
-DrawChessPieceMany
-Load
-Draw
-Refresh
+游戏大小
+游戏玩家
+棋谱
