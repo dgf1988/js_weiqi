@@ -441,11 +441,21 @@ var Weiqi = {};
         return null;
     }
 
+    function CreateGame() {
+        var Game = {};
+
+        var Players = new PlayerController(2);
+        
+
+        return Game;
+    }
+
 
     //先设置背景图片和棋子图片。
     //然后Load就可以了。
     //棋盘状态改变后，按图刷新即可。
-    function WeiqiCanvas(canvasid) {
+    function CreateChessBoard(canvas) {
+        if( !canvas) return null;
         var Mark = 0;
         var Black = 1;
         var White = 2;
@@ -454,7 +464,7 @@ var Weiqi = {};
         var TagX = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 
         var Weiqi = {};
-        var Canvas = document.getElementById(canvasid);
+        var Canvas = canvas;
         var CanvasContext = Canvas.getContext('2d');
 
         //背景
@@ -472,6 +482,26 @@ var Weiqi = {};
         Weiqi.AddBackgroundImageSrcList = function() {
             BackgroundImageSrcList = BackgroundImageSrcList.concat(arguments);
         };
+        Weiqi.LoadBackgroundImageList = function(callback) {
+            BackgroundImageList = [];
+            var n = BackgroundImageSrcList.length;
+            for( var i = 0; i < BackgroundImageSrcList.length; i++) {
+                var img = new Image();
+                img.src = BackgroundImageSrcList[i];
+                BackgroundImageList[i] = img;
+                BackgroundImageList[i].onload = function() {
+                    n--;
+                    console.log('载入背景图片。。。剩余'+n);
+                    if( !n) {
+                        console.log('背景图片载入完成。');
+                        if( callback) {
+                            callback();
+                        }
+                    }
+                }
+            }
+            return BackgroundImageList.length;
+        }
         //选用背景图片.
         Weiqi.SetBackgroundImageIndex = function(i) {
             BackgroundImageIndex = i;
@@ -530,6 +560,7 @@ var Weiqi = {};
 
         //绘制棋盘
         Weiqi.DrawChessBoard = function () {
+            console.log('绘制棋盘');
             CanvasContext.beginPath();
             //画边框。
             CanvasContext.lineWidth = 2;
@@ -605,10 +636,28 @@ var Weiqi = {};
             PlayerImageSrcList.push('');
             for(var i = 0; i < playerimagesrclist.length; i ++) {
                 PlayerImageSrcList.push(playerimagesrclist[i]);
-            }
-            
-            console.log(PlayerImageSrcList);
+            }            
         };
+        Weiqi.LoadPlayerImageList = function(callback) {
+            PlayerImageList = [];
+            var n = PlayerImageSrcList.length - 1;
+            for( var i = 1; i < PlayerImageSrcList.length; i++) {
+                var img = new Image();
+                img.src = PlayerImageSrcList[i];
+                PlayerImageList[i] = img;
+                PlayerImageList[i].onload = function() {
+                    n--;
+                    console.log('载入棋子图片。。。剩余'+n);
+                    if( !n ) {
+                        console.log('棋子图片载入完成。');
+                        if( callback) {
+                            callback();
+                        } 
+                    }
+                }
+            }
+            return PlayerImageList.length;
+        }
         /**
          * @return {boolean}
          */
@@ -645,55 +694,13 @@ var Weiqi = {};
 
         //加载资源/初始化..
         Weiqi.Load = function (callback) {
-            var n = BackgroundImageSrcList.length + PlayerImageSrcList.length - 1;
-
-            //背景图片载入
-            for ( var i=0; i<BackgroundImageSrcList.length; i++) {
-                var img = new Image();
-                img.src = BackgroundImageSrcList[i];
-                BackgroundImageList.push(img);
-                BackgroundImageList[i].onload = function () {
-                    n--;
-                    console.log('正在载入图片...剩余', n);
-                    if (!n) {
-                        if (callback) {
-                            callback();
-                        } else {
-                            Weiqi.Draw();
-                        }
-                    }
-                };
+            var n = 0;
+            n = Weiqi.LoadBackgroundImageList(Weiqi.Draw);
+            Weiqi.LoadPlayerImageList();
+            if( !n ) {
+                if (callback) callback();
+                else Weiqi.Draw();
             }
-            //黑棋图片载入
-            var b_img = new Image();
-            b_img.src = PlayerImageSrcList[Black];
-            PlayerImageList[Black] = b_img;
-            b_img.onload = function () {
-                n--;
-                console.log('正在载入图片...剩余', n);
-                if (!n) {
-                    if (callback) {
-                        callback();
-                    } else {
-                        Weiqi.Draw();
-                    }
-                }
-            };
-            //白棋图片载入
-            var w_img = new Image();
-            w_img.src = PlayerImageSrcList[White];
-            PlayerImageList[White] = w_img;
-            w_img.onload = function () {
-                n--;
-                console.log('正在载入图片...剩余', n);
-                if (!n) {
-                    if (callback) {
-                        callback();
-                    } else {
-                        Weiqi.Draw();
-                    }
-                }
-            };
         };
         //绘制背景和棋盘。
         Weiqi.Draw = function () {
@@ -711,28 +718,79 @@ var Weiqi = {};
         return Weiqi;
     }
 
+
+/****************************************
+ * 
+ */
+
+    //显示容器句柄
+    var Display = null;
+    //画棋盘句柄
+    var Canvas = null;
+    //棋盘显示控制句柄
+    var ChessBoard = null;
+
+    //显示ID
     Weiqi.DisplayId = 'weiqi';
-    
-    //显示基数设置
+    Weiqi.ApplyDisplayId = function() {
+
+    }
+    //显示尺寸基数设置
     Weiqi.DisplaySize = 25;
+    Weiqi.ApplyDisplaySize = function() {
+        ChessBoard.SetDisplaySize(Weiqi.DisplaySize);
+        ChessBoard.Draw();
+    }
 
     //背景设置
     Weiqi.ChessBoardBackgroundImage = ['bg1.png', 'bg2.png', 'bg3.png'];
+    Weiqi.ApplyChessBoardBackgroundImage = function( ) {
+        ChessBoard.SetBackgroundImageSrcList(Weiqi.ChessBoardBackgroundImage);
+        ChessBoard.LoadBackgroundImageList(ChessBoard.Draw);
+    }
+
+    //背景选择
     Weiqi.ChessBoardBackgroundImageIndex = 0;
+    Weiqi.ApplyChessBoardBackgroundImageIndex = function( ){
+        ChessBoard.SetBackgroundImageIndex(Weiqi.ChessBoardBackgroundImageIndex);
+        ChessBoard.Draw();
+    }
 
     //棋子样式设置
     Weiqi.ChessPieceImage = ['b.png', 'w.png'];
-    
-    Weiqi.GamePlayer = 2;
-    Weiqi.GameSize = 19;
-    Weiqi.GameSgf = '';
+    Weiqi.ApplyChessPieceImage = function() {
 
-    var ui = null;
+    }
+    
+    //游戏玩家设置
+    Weiqi.GamePlayer = 2;
+    Weiqi.ApplyGamePlayer = function() {
+
+    }
+
+    //游戏大小设置
+    Weiqi.GameSize = 19;
+    Weiqi.ApplyGameSize = function() {
+        ChessBoard.SetGameSize(Weiqi.GameSize);
+        ChessBoard.Draw();
+    }
+
+    //棋谱设置
+    Weiqi.GameSgf = '';
+    Weiqi.ApplyGameSgf = function() {
+
+    }
+
+    //初始化
     Weiqi.Init = function() {
-        ui = WeiqiCanvas(Weiqi.DisplayId);
-        ui.SetBackgroundImageSrcList(Weiqi.ChessBoardBackgroundImage);
-        ui.SetPlayerImageSrcList(Weiqi.ChessPieceImage);
-        ui.Load();
+        Display = document.getElementById(Weiqi.DisplayId);
+        Canvas = document.createElement('canvas');
+        Display.appendChild(Canvas);
+        ChessBoard = CreateChessBoard(Canvas);
+
+        ChessBoard.SetBackgroundImageSrcList(Weiqi.ChessBoardBackgroundImage);
+        ChessBoard.SetPlayerImageSrcList(Weiqi.ChessPieceImage);
+        ChessBoard.Load();
     }
     
 })()
