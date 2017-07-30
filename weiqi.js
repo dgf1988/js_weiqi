@@ -1,6 +1,11 @@
+// 1、函数大写开头
+// 2、属性小写开头
+
+//围棋APP
 function AppWeiqi (){
     var APP = this;
 
+    //点计算
     function Point(x, y) {
         this.x = x;
         this.y = y;
@@ -8,8 +13,9 @@ function AppWeiqi (){
     Point.prototype.Str = function(){
         return '['+this.x+','+this.y+']';
     }
+    //检查x y 是否符合本对象的取值范围。
     Point.prototype.Bool = function() {
-        return !isNaN(this.x) && !isNaN(this.y);
+        return !isNaN(this.x) && !isNaN(this.y) && this.x >= 0 && this.y >= 0;
     }
     Point.prototype.Clone = function() {
         return new Point(this.x, this.y);
@@ -17,10 +23,7 @@ function AppWeiqi (){
     Point.prototype.Equals = function(p) {
         return p.x === this.x && p.y === this.y;
     }
-    Point.prototype.Clear = function() {
-        this.x = null;
-        this.y = null;
-    }
+
     Point.prototype.GetUp = function() {
         return new Point(this.x, this.y -1);
     }
@@ -37,6 +40,7 @@ function AppWeiqi (){
         return [this.GetUp(), this.GetDown(), this.GetLeft(), this.GetRight()];
     }
 
+    //点集合计算
     function PointSet() {
         this.set = [];
         if(arguments.length>0) {
@@ -148,10 +152,12 @@ function AppWeiqi (){
         }
         return null;
     }
+    //清除所有数据。
     PointSet.prototype.Clear = function() {
         this.set = [];
     }
 
+    //元计算
     function Cell(player, number) {
         this.player = player? player: 0;
         this.number = number? number: 0;
@@ -160,6 +166,7 @@ function AppWeiqi (){
     Cell.prototype.Str= function(){
         return '['+this.player+','+this.number+']';
     }
+    //属性是否符合本对象的取值范围。
     Cell.prototype.Bool = function () {
         return !isNaN(this.player) && this.player >= 0 && !isNaN(this.number) && this.number >= 0;
     }
@@ -169,11 +176,13 @@ function AppWeiqi (){
     Cell.prototype.Equals = function(c) {
         return c.player === this.player && c.number === this.number;
     }
+    //属性值置零。
     Cell.prototype.Clear = function() {
         this.player = 0;
         this.number = 0;
     }
 
+    //图计算
     function CellMap(size) {
         this.size = size? size : 19;
         this.data = [];
@@ -252,7 +261,7 @@ function AppWeiqi (){
         return true;
     }
     CellMap.prototype.HasPoint = function(p) {
-        if( p.x < this.size && p.y < this.size && p.x>=0 && p.y>=0) {
+        if(p.Bool() && p.x < this.size && p.y < this.size ) {
             return true;
         }
         return false;
@@ -269,6 +278,7 @@ function AppWeiqi (){
     CellMap.prototype.Get = function(p) {
         return  this.data[p.x][p.y];
     }
+    //置零
     CellMap.prototype.Clear = function() {
         for( var x = 0; x< this.size; x++) {
             for( var y = 0; y< this.size; y++) {
@@ -304,6 +314,7 @@ function AppWeiqi (){
         this.data[p.x][p.y].number = number;
     }
 
+    //保存移动数据的对象。
     function Move(count, player, point, cellmap) {
         this.count = count ? count : 0;
         this.player = player ? player : 0;
@@ -314,9 +325,6 @@ function AppWeiqi (){
         this.father = null;
         //子节点
         this.children = [];
-    }
-    Move.prototype.Bool = function() {
-        return this.player > 0 && this.point && this.point.Bool();
     }
     Move.prototype.Str = function() {
         var item = [];
@@ -351,6 +359,7 @@ function AppWeiqi (){
         return this.father
     }
 
+    //玩家控制器
     function PlayerController(player_max) {
         this.max = player_max ? player_max: 2;
         this.current = 1;
@@ -362,6 +371,10 @@ function AppWeiqi (){
         if (this.current > this.max) {
             this.current = 1;
         }
+    }
+    PlayerController.prototype.Reset = function() {
+        this.current = 1;
+        this.count = 1;
     }
     PlayerController.prototype.GetCurrent = function() {
         return this.current;
