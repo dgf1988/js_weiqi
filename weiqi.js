@@ -305,16 +305,56 @@ function AppWeiqi (){
     }
 
     function Move(count, player, point, cellmap) {
-        var Count = count ? count : 0;
-        var Player = player ? player : 0;
-        var Point = point ? point : new Point();
-        var CellMap = cellmap ? cellmap : new CellMap(19)
+        this.count = count ? count : 0;
+        this.player = player ? player : 0;
+        this.point = point ? point : new Point();
+        this.cellmap = cellmap ? cellmap : new CellMap(19)
+
+        //父节点
+        this.father = null;
+        //子节点
+        this.children = [];
+    }
+    Move.prototype.Bool = function() {
+        return this.player > 0 && this.point && this.point.Bool();
+    }
+    Move.prototype.Str = function() {
+        var item = [];
+        item.push('手数='+this.count);
+        item.push('玩家='+this.player);
+        item.push('位置='+this.point.Str());
+        return item.join();
+    }
+    Move.prototype.Clone = function() {
+        var move = new Move(this.count, this.player, this.point.Clone(), this.cellmap.Clone());
+        move.father = this.father ? this.father.Clone() : null;
+        for(var i = 0; i < this.children.length; i ++) {
+            move.children[i] = this.children[i].Clone();
+        }
+        return move;
+    }
+    Move.prototype.SetFather = function(father) {
+        this.father = father;
+    }
+    Move.prototype.AppendChild = function(move) {
+        this.children.push(move);
+    }     
+    Move.prototype.GetChildBy = function(i) {
+        if( i >= this.children.length) return null;
+        return this.children[i];
+    }
+    Move.prototype.GetChild = function() {
+        if(this.children.length === 0 ) return null;
+        return this.children[0];
+    }
+    Move.prototype.GetFather = function() {
+        return this.father
     }
 
     function PlayerController(player_max) {
-        this.max = player_max;
-        this.current = 0;
-        this.count = 0;
+        this.max = player_max ? player_max: 2;
+        this.current = 1;
+        this.count = 1;
     }
     PlayerController.prototype.Next = function() {
         this.current++;
@@ -444,6 +484,54 @@ function AppWeiqi (){
         return null;
     }
 
+    //移动控制器
+    function MoveController(playercontroller, rootmove) {
+
+        var Player = playercontroller ? playercontroller: new PlayerController(2);
+        var Root = rootmove ? rootmove : new Move();
+        var Ptr = Root;
+        
+        this.GetLastMove = function() {
+            var ptr = Root;
+            var child = ptr.GetChild();
+            while(child) {
+                ptr = child;
+                child = ptr.GetChild();
+            }
+            return ptr.Clone();
+        }
+
+        this.Move = function(point) {
+            var move = Player.Move(point, Ptr.cellmap.Clone());
+            if( move) {
+                Ptr.AppendChild(move);
+                Ptr = move;
+                Player.Next();
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+    function Game() {
+        var Game = this;
+        
+        Game.MoveTry = function(point) {
+
+        }
+        Game.MoveForward = function() {
+
+        }
+        Game.MoveBack = function() {
+
+        }
+        Game.MoveTo = function(number) {
+
+        }
+
+
+    }
     
 
     //先设置背景图片和棋子图片。
@@ -722,6 +810,8 @@ function AppWeiqi (){
     //棋盘显示控制句柄
     var ChessBoard = null;
 
+    var MoveHandler = null;
+
     //显示ID
     APP.DisplayId = 'weiqi';
     APP.ApplyDisplayId = function() {
@@ -774,16 +864,20 @@ function AppWeiqi (){
     }
 
     //初始化
-    APP.Init = function() {
-        Display = document.getElementById(APP.DisplayId);
-        Canvas = document.createElement('canvas');
-        Display.appendChild(Canvas);
-        ChessBoard = new ChessBoardByCanvas(Canvas);
-        
+    Display = document.getElementById(APP.DisplayId);
+    Canvas = document.createElement('canvas');
+    Display.appendChild(Canvas);
+    ChessBoard = new ChessBoardByCanvas(Canvas);
 
-        ChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
-        ChessBoard.SetPlayerImageSrcList(APP.ChessPieceImage);
-        ChessBoard.Load();
-    }
-    
+    MoveHandler = new MoveController(new PlayerController(2), new Move());
+    ChessBoard.OnMove = function(x, y) {
+        var point = new Point(x, y);
+        MoveHandler.Move(point);
+        //console.log(MoveHandler.GetLastMove().cellmap.Str());
+        ChessBoard.DrawByMap(MoveHandler.GetLastMove().cellmap.data);
+    }    
+
+    ChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
+    ChessBoard.SetPlayerImageSrcList(APP.ChessPieceImage);
+    ChessBoard.Load();
 }
