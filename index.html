@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>围棋</title>
-	<script>
+	<script src="weiqi.js">
 		
 	</script>
 </head>
@@ -17,7 +17,6 @@
  <input type="button" value="设置路数" id="setline" onclick="SetGameSize(event)">
  <input type="number" id="backgroundindex" value="0">
  <input type="button" value="设置背景图" id="setbg" onclick="SetBackground(event)">
- <script src="weiqi.js" type="text/javascript"></script>
  <script language="JavaScript">
      /*
      Weiqi.DisplayId = 'weiqi';
@@ -30,25 +29,25 @@
      Weiqi.GameSize = 19;
      Weiqi.GameSgf = '';
      */
-    var Weiqi = new AppWeiqi();
-     Weiqi.Init();
+    var App = new AppWeiqi();
+     App.Init();
 
      function SetDisplaySize (e) {
          var orm = document.getElementById('displaysize');
-         Weiqi.DisplaySize = parseInt(orm.value);
-         Weiqi.ApplyDisplaySize();
+         App.DisplaySize = parseInt(orm.value);
+         App.ApplyDisplaySize();
      }
 
     function SetGameSize(e) {
         var orm = document.getElementById('gamesize');
-        Weiqi.GameSize = parseInt(orm.value);
-        Weiqi.ApplyGameSize();
+        App.GameSize = parseInt(orm.value);
+        App.ApplyGameSize();
     }
 
     function SetBackground(e) {
         var orm = document.getElementById('backgroundindex');
-        Weiqi.ChessBoardBackgroundImageIndex = parseInt(orm.value);
-        Weiqi.ApplyChessBoardBackgroundImageIndex();
+        App.ChessBoardBackgroundImageIndex = parseInt(orm.value);
+        App.ApplyChessBoardBackgroundImageIndex();
     }
     
  </script>
