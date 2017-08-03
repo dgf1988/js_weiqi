@@ -3,20 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>围棋</title>
-	<script src="weiqi.js">
-		
-	</script>
+	<script src="weiqi.js"></script>
+
+    <style>
+        #top-weiqi {
+            border: 0px solid black;
+        }
+        .btn {
+            width: 50px;
+            height: 20px;
+        }
+        canvas {
+            border: 1px solid #555; 
+            border-radius: 3px;
+            box-shadow: 1px 1px 4px #000;
+        }
+    </style>
+
 </head>
 <body style="text-align: center">
- <article id="weiqi">
+<div id = top-weiqi>
 
- </article>
- <input type="number" id="displaysize" value="25">
- <input type="button" value="设置大小" id="setsize" onclick="SetDisplaySize(event)">
- <input type="number" id="gamesize" value="19">
- <input type="button" value="设置路数" id="setline" onclick="SetGameSize(event)">
- <input type="number" id="backgroundindex" value="0">
- <input type="button" value="设置背景图" id="setbg" onclick="SetBackground(event)">
+    <div id="weiqi">
+    </div>
+    <button class="btn" >最前</button>
+    <button class="btn">向前</button>
+    <button class="btn">向后</button>
+    <button class="btn">最后</button>
+</div>
  <script language="JavaScript">
      /*
      Weiqi.DisplayId = 'weiqi';

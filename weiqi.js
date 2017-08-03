@@ -1,5 +1,7 @@
 // 1、函数大写开头
 // 2、属性小写开头
+// 3、Get 给的是原引用。
+// 4、Bool 检查的是属性的取值范围。
 
 //围棋APP
 function AppWeiqi (){
@@ -11,7 +13,7 @@ function AppWeiqi (){
         this.y = y;
     }
     Point.prototype.Str = function(){
-        return '['+this.x+','+this.y+']';
+        return '('+this.x+','+this.y+')';
     }
     //检查x y 是否符合本对象的取值范围。
     Point.prototype.Bool = function() {
@@ -42,35 +44,32 @@ function AppWeiqi (){
 
     //点集合计算
     function PointSet() {
-        this.set = [];
-        if(arguments.length>0) {
-            this.AddList(arguments);
-        }
+        this.data = [];
     }
     PointSet.prototype.Str= function() {
         var str_item = [];
-        for( var i = 0; i< this.set.length; i++) {
-            str_item.push(this.set[i].Str());
+        for( var i = 0; i< this.data.length; i++) {
+            str_item.push(this.data[i].Str());
         }
         return str_item.join(', ');
     }
     PointSet.prototype.Clone = function() {
         var clone = new PointSet() ;
-        for( var i = 0; i < this.set.length; i ++) {
-            clone.set.push(this.set[i].Clone());
+        for( var i = 0; i < this.data.length; i ++) {
+            clone.set.push(this.data[i].Clone());
         }
         return clone;
     }
     PointSet.prototype.CloneToList = function() {
         var clone = [];
-        for( var i = 0; i < this.set.length; i ++) {
-            clone.push(this.set[i].Clone());
+        for( var i = 0; i < this.data.length; i ++) {
+            clone.push(this.data[i].Clone());
         }
         return clone;
     }
     PointSet.prototype.Has = function(p) {
-        for( var i = 0; i<this.set.length; i++) {
-            if (this.set[i].Equals(p)) {
+        for( var i = 0; i<this.data.length; i++) {
+            if (this.data[i].Equals(p)) {
                 return true;
             }
         }
@@ -78,7 +77,7 @@ function AppWeiqi (){
     }
     PointSet.prototype.Equals = function(pset) {
         if( pset instanceof PointSet) {
-            if (pset.set.length === this.set.length) {
+            if (pset.set.length === this.data.length) {
                 for(var i = 0; i< pset.set.length; i++) {
                     if( !this.Has(pset.set[i])) {
                         return false;
@@ -90,13 +89,13 @@ function AppWeiqi (){
         return false;
     }
     PointSet.prototype.Length = function(){
-        return this.set.length;
+        return this.data.length;
     }
     PointSet.prototype.Add = function(p) {
         if(this.Has(p)) {
             return false;
         }
-        this.set.push(p);
+        this.data.push(p);
         return true;
     }
     PointSet.prototype.AddList= function(plist) {
@@ -127,26 +126,26 @@ function AppWeiqi (){
         return news;
     }
     PointSet.prototype.Del = function(i) {
-        this.set.splice(i, 1);
+        this.data.splice(i, 1);
     }
     PointSet.prototype.Remove = function(p) {
-        for( var i = 0; i< this.set.length; i++) {
-            if( this.set[i].Equals(p)) {
-                this.set.splice(i, 1);
+        for( var i = 0; i< this.data.length; i++) {
+            if( this.data[i].Equals(p)) {
+                this.data.splice(i, 1);
                 return true;
             }
         }
         return false;
     }
     PointSet.prototype.Set = function(i, p) {
-        this.set[i] = p;
+        this.data[i] = p;
     }
     PointSet.prototype.Get = function(i) {
-        return this.set[i];
+        return this.data[i];
     }
     PointSet.prototype.Find = function(p) {
-        for(var i = 0; i < this.set.length; i++) {
-            if (this.set[i].Equals(p)) {
+        for(var i = 0; i < this.data.length; i++) {
+            if (this.data[i].Equals(p)) {
                 return i;
             }
         }
@@ -154,7 +153,7 @@ function AppWeiqi (){
     }
     //清除所有数据。
     PointSet.prototype.Clear = function() {
-        this.set = [];
+        this.data = [];
     }
 
     //元计算
@@ -355,40 +354,25 @@ function AppWeiqi (){
         if(this.children.length === 0 ) return null;
         return this.children[0];
     }
+    Move.prototype.GetLastChild = function(){
+        if( this.children.length === 0 ) return null;
+        var child = this.children[0];
+        while(child.children.length !==0 ) {
+            child = child.children[0];
+        }
+        return child;
+    }
     Move.prototype.GetFather = function() {
         return this.father
     }
+    Move.prototype.GetRoot = function() {
+        var father = this.father;
+        while(father) {
+            father = father.father;
+        }
+        return father;
+    }
 
-    //玩家控制器
-    function PlayerController(player_max) {
-        this.max = player_max ? player_max: 2;
-        this.current = 1;
-        this.count = 1;
-    }
-    PlayerController.prototype.Next = function() {
-        this.current++;
-        this.count++;
-        if (this.current > this.max) {
-            this.current = 1;
-        }
-    }
-    PlayerController.prototype.Reset = function() {
-        this.current = 1;
-        this.count = 1;
-    }
-    PlayerController.prototype.GetCurrent = function() {
-        return this.current;
-    }
-    PlayerController.prototype.GetCount = function() {
-        return this.count;
-    }
-    PlayerController.prototype.OtherList = function() {
-        var other = [];
-        for( var i = 1; i <= this.max; i++) {
-            if (i != this.current) other.push(i);
-        }
-        return other;
-    }
 
     var GetUpPointByPlayer = function(player, point, cellmap) {
         var p = point.GetUp();
@@ -463,6 +447,37 @@ function AppWeiqi (){
         }
         return lives;
     }
+
+    //玩家控制器
+    function PlayerController(player_max) {
+        this.max = player_max ? player_max: 2;
+        this.current = 1;
+        this.count = 1;
+    }
+    PlayerController.prototype.Next = function() {
+        this.current++;
+        this.count++;
+        if (this.current > this.max) {
+            this.current = 1;
+        }
+    }
+    PlayerController.prototype.Reset = function() {
+        this.current = 1;
+        this.count = 1;
+    }
+    PlayerController.prototype.GetCurrent = function() {
+        return this.current;
+    }
+    PlayerController.prototype.GetCount = function() {
+        return this.count;
+    }
+    PlayerController.prototype.OtherList = function() {
+        var other = [];
+        for( var i = 1; i <= this.max; i++) {
+            if (i != this.current) other.push(i);
+        }
+        return other;
+    }
     PlayerController.prototype.Move = function(point, cellmap) {
         if( point.Bool() && cellmap.HasPoint(point) && !cellmap.HasPlayer(point)) {
             cellmap.SetCellByPoint(point, new Cell(this.current, this.count)) ;
@@ -503,7 +518,29 @@ function AppWeiqi (){
         var Player = playercontroller ? playercontroller: new PlayerController(2);
         var Root = rootmove ? rootmove : new Move();
         var Ptr = Root;
+
+        this.GetRoot = function() {
+            return Root;
+        }
         
+        this.GetMove = function(i) {
+            if (!isNaN(i)) {
+                if ( i === 0 ) {
+                    return Root.Clone();
+                }
+                if( i > 0) {
+                    var ptr = Root;
+                    var child = ptr.GetChild();
+                    var n = 1;
+
+                } else {
+
+                }
+
+            }
+            return null;
+        }
+
         this.GetLastMove = function() {
             var ptr = Root;
             var child = ptr.GetChild();
@@ -564,6 +601,54 @@ function AppWeiqi (){
         var Canvas = canvas;
         var CanvasContext = Canvas.getContext('2d');
 
+        //棋盘
+        var DisplaySize = 27;
+        var GameSize = 19;
+        //棋盘的绘制大小。
+        var BoardSize = 0;
+        //棋盘边缘大小
+        var BoardMargin = 0;
+        //棋盘棋子绘制和事件监听起始位置
+        var BoardStartXY = 0;
+        //画布大小
+        var CanvasSize = 0;
+
+        function SetSize () {
+            BoardSize = DisplaySize*(GameSize-1);
+            BoardMargin = DisplaySize * 0.8;
+            BoardStartXY = BoardMargin - DisplaySize/2;
+            CanvasSize = DisplaySize * (GameSize-1) + BoardMargin * 2;
+            Canvas.width = CanvasSize;
+            Canvas.height = CanvasSize;
+        }
+        SetSize();
+        //设置显示基数
+        Obj.SetDisplaySize = function(display_size) {
+            if( !isNaN(display_size) && display_size) {
+                if( display_size < 10 ) {
+                    display_size = 10;
+                }
+            } else {
+                return null;
+            }
+            DisplaySize = display_size;
+            SetSize();
+        }
+        //设置游戏大小。
+        Obj.SetGameSize = function(game_size) {
+            if(!isNaN(game_size)) {
+                if( game_size > TagX.length) {
+                    game_size = TagX.length;
+                } else if( game_size < 9) {
+                    game_size = 9;
+                }
+            } else {
+                return null; 
+            }
+            GameSize = game_size;
+            SetSize();
+        }
+
         //背景
         var BackgroundImageSrcList = [];
         var BackgroundImageList = [];
@@ -606,62 +691,18 @@ function AppWeiqi (){
         //绘画背景图片.
         Obj.DrawBackgroundImage = function () {
             if (BackgroundImageIndex < BackgroundImageList.length && BackgroundImageIndex >= 0)
-                CanvasContext.drawImage(BackgroundImageList[BackgroundImageIndex], 0, 0, CanvasSize, CanvasSize);
+                CanvasContext.drawImage(BackgroundImageList[BackgroundImageIndex], 
+                    0, 0, 
+                    BoardMargin*2+BoardSize, BoardMargin*2+BoardSize);
         };
-
-        //棋盘
-        var DisplaySize = 25;
-        var GameSize = 19;
-        var BoardSize = DisplaySize*(GameSize-1);
-        var BoardMargin = DisplaySize*1.5;
-        var BoardStartXY = BoardMargin - DisplaySize/2;
-        var CanvasSize = DisplaySize*(GameSize+2);
-        Canvas.width = CanvasSize;
-        Canvas.height = CanvasSize;
-        //设置显示基数
-        Obj.SetDisplaySize = function(display_size) {
-            if( !isNaN(display_size) && display_size) {
-                if( display_size < 10 ) {
-                    display_size = 10;
-                }
-            } else {
-                return null;
-            }
-            DisplaySize = display_size;
-            BoardSize = DisplaySize*(GameSize-1);
-            BoardMargin = DisplaySize*1.5;
-            BoardStartXY = BoardMargin - DisplaySize/2;
-            CanvasSize = DisplaySize*(GameSize+2);
-            Canvas.width = CanvasSize;
-            Canvas.height = CanvasSize;
-        }
-        //设置游戏大小。
-        Obj.SetGameSize = function(game_size) {
-            if(!isNaN(game_size)) {
-                if( game_size > TagX.length) {
-                    game_size = TagX.length;
-                } else if( game_size < 9) {
-                    game_size = 9;
-                }
-            } else {
-                return null; 
-            }
-            GameSize = game_size;
-            BoardSize = DisplaySize*(GameSize-1);
-            BoardMargin = DisplaySize*1.5;
-            BoardStartXY = BoardMargin - DisplaySize/2;
-            CanvasSize = DisplaySize*(GameSize+2);
-            Canvas.width = CanvasSize;
-            Canvas.height = CanvasSize;
-        }
 
         //绘制棋盘
         Obj.DrawChessBoard = function () {
             console.log('绘制棋盘');
             CanvasContext.beginPath();
             //画边框。
-            CanvasContext.lineWidth = 2;
-            CanvasContext.strokeStyle = '#000';
+            CanvasContext.lineWidth = 1;
+            CanvasContext.strokeStyle = '#444';
             CanvasContext.rect(BoardMargin, BoardMargin, BoardSize, BoardSize);
             CanvasContext.stroke();
 
@@ -698,6 +739,7 @@ function AppWeiqi (){
             }
 
             //画坐标。
+            /*
             var fontsize = DisplaySize*3/4;
             CanvasContext.font= fontsize.toString()+"px Asia";
             CanvasContext.textAlign = 'center';
@@ -707,7 +749,9 @@ function AppWeiqi (){
                 CanvasContext.fillText(TagY[j], BoardMargin-DisplaySize, BoardMargin+j*DisplaySize+DisplaySize/4);
                 CanvasContext.fillText(TagY[j], BoardMargin+DisplaySize+BoardSize, BoardMargin+j*DisplaySize+DisplaySize/4);
             }
+            */
             CanvasContext.closePath();
+
         };
 
         //下棋事件在这里设置。
@@ -770,11 +814,24 @@ function AppWeiqi (){
                 return false;
             }
             //画棋子
+            CanvasContext.beginPath();
+            if(player == Black) {
+                CanvasContext.fillStyle = '#222';
+            } else if( player == White) {
+                CanvasContext.fillStyle = '#EEE';
+            }
+            CanvasContext.arc(
+                x * DisplaySize + BoardStartXY + DisplaySize/2, 
+                y * DisplaySize + BoardStartXY + DisplaySize/2,
+                DisplaySize/2, 0, 2*Math.PI);
+            CanvasContext.fill();
+            /*
             CanvasContext.drawImage(PlayerImageList[player],
                 x * DisplaySize + BoardStartXY,
                 y * DisplaySize + BoardStartXY,
                 DisplaySize-1,
                 DisplaySize-1);
+            */
             return true;
         };
         //按图绘制。
@@ -821,9 +878,9 @@ function AppWeiqi (){
     //画棋盘句柄
     var Canvas = null;
     //棋盘显示控制句柄
-    var ChessBoard = null;
+    var HandleChessBoard = null;
 
-    var MoveHandler = null;
+    var HandleMove = null;
 
     //显示ID
     APP.DisplayId = 'weiqi';
@@ -833,22 +890,22 @@ function AppWeiqi (){
     //显示尺寸基数设置
     APP.DisplaySize = 25;
     APP.ApplyDisplaySize = function() {
-        ChessBoard.SetDisplaySize(APP.DisplaySize);
-        ChessBoard.Draw();
+        HandleChessBoard.SetDisplaySize(APP.DisplaySize);
+        HandleChessBoard.Draw();
     }
 
     //背景设置
     APP.ChessBoardBackgroundImage = ['bg1.png', 'bg2.png', 'bg3.png'];
     APP.ApplyChessBoardBackgroundImage = function( ) {
-        ChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
-        ChessBoard.LoadBackgroundImageList(ChessBoard.Draw);
+        HandleChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
+        HandleChessBoard.LoadBackgroundImageList(HandleChessBoard.Draw);
     }
 
     //背景选择
     APP.ChessBoardBackgroundImageIndex = 0;
     APP.ApplyChessBoardBackgroundImageIndex = function( ){
-        ChessBoard.SetBackgroundImageIndex(APP.ChessBoardBackgroundImageIndex);
-        ChessBoard.Draw();
+        HandleChessBoard.SetBackgroundImageIndex(APP.ChessBoardBackgroundImageIndex);
+        HandleChessBoard.Draw();
     }
 
     //棋子样式设置
@@ -866,8 +923,8 @@ function AppWeiqi (){
     //游戏大小设置
     APP.GameSize = 19;
     APP.ApplyGameSize = function() {
-        ChessBoard.SetGameSize(APP.GameSize);
-        ChessBoard.Draw();
+        HandleChessBoard.SetGameSize(APP.GameSize);
+        HandleChessBoard.Draw();
     }
 
     //棋谱设置
@@ -880,17 +937,18 @@ function AppWeiqi (){
     Display = document.getElementById(APP.DisplayId);
     Canvas = document.createElement('canvas');
     Display.appendChild(Canvas);
-    ChessBoard = new ChessBoardByCanvas(Canvas);
+    HandleChessBoard = new ChessBoardByCanvas(Canvas);
 
-    MoveHandler = new MoveController(new PlayerController(2), new Move());
-    ChessBoard.OnMove = function(x, y) {
+    HandleMove = new MoveController(new PlayerController(2), new Move());
+    HandleChessBoard.OnMove = function(x, y) {
         var point = new Point(x, y);
-        MoveHandler.Move(point);
-        //console.log(MoveHandler.GetLastMove().cellmap.Str());
-        ChessBoard.DrawByMap(MoveHandler.GetLastMove().cellmap.data);
+        HandleMove.Move(point);
+        //console.log(HandleMove.GetLastMove().cellmap.Str());
+        HandleChessBoard.DrawByMap(HandleMove.GetRoot().GetLastChild().cellmap.data);
     }    
 
-    ChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
-    ChessBoard.SetPlayerImageSrcList(APP.ChessPieceImage);
-    ChessBoard.Load();
+    HandleChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
+    HandleChessBoard.SetBackgroundImageIndex(2);
+    HandleChessBoard.SetPlayerImageSrcList(APP.ChessPieceImage);
+    HandleChessBoard.Load();
 }
