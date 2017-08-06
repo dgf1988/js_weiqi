@@ -15,8 +15,8 @@
         }
         canvas {
             border: 1px solid #555; 
-            border-radius: 3px;
-            box-shadow: 1px 1px 4px #000;
+            border-radius: 5px;
+            box-shadow: 3px 3px 3px #333;
         }
     </style>
 
@@ -24,12 +24,9 @@
 <body style="text-align: center">
 <div id = top-weiqi>
 
-    <div id="weiqi">
+    <div id="testweiqi">
     </div>
-    <button class="btn" >最前</button>
-    <button class="btn">向前</button>
-    <button class="btn">向后</button>
-    <button class="btn">最后</button>
+    
 </div>
  <script language="JavaScript">
      /*
@@ -43,25 +40,7 @@
      Weiqi.GameSize = 19;
      Weiqi.GameSgf = '';
      */
-    var App = new AppWeiqi();
-
-     function SetDisplaySize (e) {
-         var orm = document.getElementById('displaysize');
-         App.DisplaySize = parseInt(orm.value);
-         App.ApplyDisplaySize();
-     }
-
-    function SetGameSize(e) {
-        var orm = document.getElementById('gamesize');
-        App.GameSize = parseInt(orm.value);
-        App.ApplyGameSize();
-    }
-
-    function SetBackground(e) {
-        var orm = document.getElementById('backgroundindex');
-        App.ChessBoardBackgroundImageIndex = parseInt(orm.value);
-        App.ApplyChessBoardBackgroundImageIndex();
-    }
+    var App = new AppWeiqi('testweiqi');
     
  </script>
 </body>

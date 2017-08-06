@@ -4,7 +4,7 @@
 // 4、Bool 检查的是属性的取值范围。
 
 //围棋APP
-function AppWeiqi (){
+function AppWeiqi (display_id){
     var APP = this;
 
     //点计算
@@ -354,7 +354,7 @@ function AppWeiqi (){
         if(this.children.length === 0 ) return null;
         return this.children[0];
     }
-    Move.prototype.GetLastChild = function(){
+    Move.prototype.GetLast = function(){
         if( this.children.length === 0 ) return null;
         var child = this.children[0];
         while(child.children.length !==0 ) {
@@ -696,6 +696,19 @@ function AppWeiqi (){
                     BoardMargin*2+BoardSize, BoardMargin*2+BoardSize);
         };
 
+        Obj.DrawBackgroundColor = function( ) {
+            /*
+            var grd = CanvasContext.createLinearGradient(0, 0, BoardMargin*2+BoardSize, BoardMargin*2+BoardSize);
+            grd.addColorStop(0.1, '#e0c9aa');
+            grd.addColorStop(0.5, '#eecfa1');
+            grd.addColorStop(0.9, '#e0c9aa');
+            */
+            CanvasContext.fillStyle = '#e0c9aa';
+            CanvasContext.fillRect(0, 0, BoardMargin*2+BoardSize, BoardMargin*2+BoardSize);
+        };
+        
+
+
         //绘制棋盘
         Obj.DrawChessBoard = function () {
             console.log('绘制棋盘');
@@ -815,16 +828,30 @@ function AppWeiqi (){
             }
             //画棋子
             CanvasContext.beginPath();
+            var grd = CanvasContext.createRadialGradient(
+                x * DisplaySize + BoardStartXY + DisplaySize/2 - DisplaySize / 6, 
+                y * DisplaySize + BoardStartXY + DisplaySize/2 - DisplaySize / 6,
+                0.5,
+                x * DisplaySize + BoardStartXY + DisplaySize/2, 
+                y * DisplaySize + BoardStartXY + DisplaySize/2,
+                DisplaySize/2
+            );
             if(player == Black) {
-                CanvasContext.fillStyle = '#222';
+                grd.addColorStop(0, '#555');
+                grd.addColorStop(0.9, '#222');
+                CanvasContext.fillStyle = grd;
             } else if( player == White) {
-                CanvasContext.fillStyle = '#EEE';
+                grd.addColorStop(0, '#eee');
+                grd.addColorStop(0.9, '#bbb');
+                CanvasContext.fillStyle = grd;
             }
             CanvasContext.arc(
                 x * DisplaySize + BoardStartXY + DisplaySize/2, 
                 y * DisplaySize + BoardStartXY + DisplaySize/2,
                 DisplaySize/2, 0, 2*Math.PI);
+
             CanvasContext.fill();
+            
             /*
             CanvasContext.drawImage(PlayerImageList[player],
                 x * DisplaySize + BoardStartXY,
@@ -851,14 +878,10 @@ function AppWeiqi (){
             var n = 0;
             n = Obj.LoadBackgroundImageList(Obj.Draw);
             Obj.LoadPlayerImageList();
-            if( !n ) {
-                if (callback) callback();
-                else Obj.Draw();
-            }
         };
         //绘制背景和棋盘。
         Obj.Draw = function () {            
-            Obj.DrawBackgroundImage();
+            Obj.DrawBackgroundColor();
             Obj.DrawChessBoard();
         }
         //按图绘制全部。
@@ -883,7 +906,7 @@ function AppWeiqi (){
     var HandleMove = null;
 
     //显示ID
-    APP.DisplayId = 'weiqi';
+    APP.DisplayId = display_id;
     APP.ApplyDisplayId = function() {
 
     }
@@ -894,26 +917,6 @@ function AppWeiqi (){
         HandleChessBoard.Draw();
     }
 
-    //背景设置
-    APP.ChessBoardBackgroundImage = ['bg1.png', 'bg2.png', 'bg3.png'];
-    APP.ApplyChessBoardBackgroundImage = function( ) {
-        HandleChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
-        HandleChessBoard.LoadBackgroundImageList(HandleChessBoard.Draw);
-    }
-
-    //背景选择
-    APP.ChessBoardBackgroundImageIndex = 0;
-    APP.ApplyChessBoardBackgroundImageIndex = function( ){
-        HandleChessBoard.SetBackgroundImageIndex(APP.ChessBoardBackgroundImageIndex);
-        HandleChessBoard.Draw();
-    }
-
-    //棋子样式设置
-    APP.ChessPieceImage = ['b.png', 'w.png'];
-    APP.ApplyChessPieceImage = function() {
-
-    }
-    
     //游戏玩家设置
     APP.GamePlayer = 2;
     APP.ApplyGamePlayer = function() {
@@ -940,15 +943,14 @@ function AppWeiqi (){
     HandleChessBoard = new ChessBoardByCanvas(Canvas);
 
     HandleMove = new MoveController(new PlayerController(2), new Move());
+
     HandleChessBoard.OnMove = function(x, y) {
         var point = new Point(x, y);
         HandleMove.Move(point);
         //console.log(HandleMove.GetLastMove().cellmap.Str());
-        HandleChessBoard.DrawByMap(HandleMove.GetRoot().GetLastChild().cellmap.data);
+        HandleChessBoard.DrawByMap(HandleMove.GetRoot().GetLast().cellmap.data);
     }    
 
-    HandleChessBoard.SetBackgroundImageSrcList(APP.ChessBoardBackgroundImage);
-    HandleChessBoard.SetBackgroundImageIndex(2);
-    HandleChessBoard.SetPlayerImageSrcList(APP.ChessPieceImage);
-    HandleChessBoard.Load();
+    HandleChessBoard.Draw();
+    //HandleChessBoard.DrawByMap(HandleMove.GetRoot().GetLast().cellmap.data);
 }
