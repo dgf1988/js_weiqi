@@ -5,6 +5,13 @@
 
 //围棋APP
 function AppWeiqi (display_id){
+    var DEFAULT_GAME_SiZE = 19;
+    var MIN_GAME_SiZE = 9;
+    var MAX_GAME_SiZE = 26;
+    var DEFAULT_GAME_PLAYER = 2;
+    var DEFAULT_DISPLAY_SIZE = 27;
+
+
     var APP = this;
 
     //点计算
@@ -183,11 +190,11 @@ function AppWeiqi (display_id){
 
     //图计算
     function CellMap(size) {
-        this.size = size? size : 19;
+        this.size = size? size : DEFAULT_GAME_SiZE;
         this.data = [];
 
-        if(isNaN(this.size) || this.size <= 0 || this.size > 26) {
-            this.size = 19;
+        if(isNaN(this.size) || this.size <= 0 || this.size > MAX_GAME_SiZE) {
+            this.size = DEFAULT_GAME_SiZE;
         }
         for( var x = 0; x< this.size; x++) {
             var row = [];
@@ -252,7 +259,20 @@ function AppWeiqi (display_id){
         }
         for( var x = 0; x < this.size; x++) {
             for( var y = 0; y < this.size; y++ ) {
-                if( this.data[x][y] != cellmap.data[x][y]) {
+                if( !this.data[x][y].Equals(cellmap.data[x][y]) ) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    CellMap.prototype.EqualsPlayer = function(cellmap) {
+        if(this.size != cellmap.size) {
+            return false;
+        }
+        for( var x = 0; x < this.size; x++) {
+            for( var y = 0; y < this.size; y++ ) {
+                if( this.data[x][y].player !== cellmap.data[x][y].player ) {
                     return false;
                 }
             }
@@ -318,7 +338,7 @@ function AppWeiqi (display_id){
         this.count = count ? count : 0;
         this.player = player ? player : 0;
         this.point = point ? point : new Point();
-        this.cellmap = cellmap ? cellmap : new CellMap(19)
+        this.cellmap = cellmap ? cellmap : new CellMap(DEFAULT_GAME_SiZE);
 
         //父节点
         this.father = null;
@@ -450,7 +470,7 @@ function AppWeiqi (display_id){
 
     //玩家控制器
     function PlayerController(player_max) {
-        this.max = player_max ? player_max: 2;
+        this.max = player_max ? player_max: DEFAULT_GAME_PLAYER;
         this.current = 1;
         this.count = 1;
     }
@@ -512,64 +532,41 @@ function AppWeiqi (display_id){
         return null;
     }
 
-    //移动控制器
-    function MoveController(playercontroller, rootmove) {
+    function Game(playersize, firstmap) {
+        var Game = this;
+        var Player = new PlayerController(playersize);
+        var Root = new Move();
+        Root.cellmap = firstmap.Clone();
+        var Now = Root;
 
-        var Player = playercontroller ? playercontroller: new PlayerController(2);
-        var Root = rootmove ? rootmove : new Move();
-        var Ptr = Root;
-
-        this.GetRoot = function() {
-            return Root;
-        }
         
-        this.GetMove = function(i) {
-            if (!isNaN(i)) {
-                if ( i === 0 ) {
-                    return Root.Clone();
-                }
-                if( i > 0) {
-                    var ptr = Root;
-                    var child = ptr.GetChild();
-                    var n = 1;
-
-                } else {
-
-                }
-
-            }
-            return null;
-        }
-
-        this.GetLastMove = function() {
-            var ptr = Root;
-            var child = ptr.GetChild();
-            while(child) {
-                ptr = child;
-                child = ptr.GetChild();
-            }
-            return ptr.Clone();
-        }
-
-        this.Move = function(point) {
-            var move = Player.Move(point, Ptr.cellmap.Clone());
+        Game.Move = function( point ) {
+            var move = Player.Move(point, Now.cellmap.Clone());
             if( move) {
-                Ptr.AppendChild(move);
-                Ptr = move;
+                var tryfather = Now.father;
+                if( tryfather ) {
+                    console.log('has father');
+                    if( tryfather.cellmap.EqualsPlayer(move.cellmap)) {
+                        console.log('同型');
+                        return false;
+                    }
+                }
+
                 Player.Next();
+
+                move.SetFather( Now );
+                Now.AppendChild(move);
+                Now = move;
+
                 return true;
             }
             return false;
         }
-    }
 
-
-    function Game() {
-        var Game = this;
-        
-        Game.MoveTry = function(point) {
-
+        Game.GetNowMap = function() {
+            return Now.cellmap;
         }
+
         Game.MoveForward = function() {
 
         }
@@ -602,8 +599,8 @@ function AppWeiqi (display_id){
         var CanvasContext = Canvas.getContext('2d');
 
         //棋盘
-        var DisplaySize = 27;
-        var GameSize = 19;
+        var DisplaySize = DEFAULT_DISPLAY_SIZE;
+        var GameSize = DEFAULT_GAME_SiZE;
         //棋盘的绘制大小。
         var BoardSize = 0;
         //棋盘边缘大小
@@ -903,7 +900,7 @@ function AppWeiqi (display_id){
     //棋盘显示控制句柄
     var HandleChessBoard = null;
 
-    var HandleMove = null;
+    var HandleGame = null;
 
     //显示ID
     APP.DisplayId = display_id;
@@ -911,20 +908,20 @@ function AppWeiqi (display_id){
 
     }
     //显示尺寸基数设置
-    APP.DisplaySize = 25;
+    APP.DisplaySize = DEFAULT_DISPLAY_SIZE;
     APP.ApplyDisplaySize = function() {
         HandleChessBoard.SetDisplaySize(APP.DisplaySize);
         HandleChessBoard.Draw();
     }
 
     //游戏玩家设置
-    APP.GamePlayer = 2;
-    APP.ApplyGamePlayer = function() {
+    APP.PlayerSize = DEFAULT_GAME_PLAYER;
+    APP.ApplyPlayerSize = function() {
 
     }
 
     //游戏大小设置
-    APP.GameSize = 19;
+    APP.GameSize = DEFAULT_GAME_SiZE;
     APP.ApplyGameSize = function() {
         HandleChessBoard.SetGameSize(APP.GameSize);
         HandleChessBoard.Draw();
@@ -941,14 +938,20 @@ function AppWeiqi (display_id){
     Canvas = document.createElement('canvas');
     Display.appendChild(Canvas);
     HandleChessBoard = new ChessBoardByCanvas(Canvas);
+    HandleChessBoard.SetDisplaySize(APP.DisplaySize);
+    HandleChessBoard.SetGameSize(APP.GameSize);
 
-    HandleMove = new MoveController(new PlayerController(2), new Move());
+    HandleGame = new Game(APP.PlayerSize, new CellMap(APP.GameSize));
+
+
 
     HandleChessBoard.OnMove = function(x, y) {
         var point = new Point(x, y);
-        HandleMove.Move(point);
+        if( HandleGame.Move(point) ) {
+            HandleChessBoard.DrawByMap(HandleGame.GetNowMap().data);   
+        }
         //console.log(HandleMove.GetLastMove().cellmap.Str());
-        HandleChessBoard.DrawByMap(HandleMove.GetRoot().GetLast().cellmap.data);
+        
     }    
 
     HandleChessBoard.Draw();
