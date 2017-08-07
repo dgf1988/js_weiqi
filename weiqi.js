@@ -920,7 +920,7 @@ function AppWeiqi(display_id) {
 
     }
     //显示尺寸基数设置
-    APP.DisplaySize = 27;
+    APP.DisplaySize = DEFAULT_DISPLAY_SIZE;
     APP.ApplyDisplaySize = function () {
         ChessBoardHandler.SetDisplaySize(APP.DisplaySize);
         ChessBoardHandler.Draw();
