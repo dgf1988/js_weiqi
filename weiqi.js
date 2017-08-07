@@ -8,8 +8,9 @@ function AppWeiqi (display_id){
     var DEFAULT_GAME_SiZE = 19;
     var MIN_GAME_SiZE = 9;
     var MAX_GAME_SiZE = 26;
-    var DEFAULT_GAME_PLAYER = 2;
+    var DEFAULT_PLAYER_SIZE = 2;
     var DEFAULT_DISPLAY_SIZE = 27;
+	var MIN_DISPLAY_SIZE = 10;
 
 
     var APP = this;
@@ -470,7 +471,7 @@ function AppWeiqi (display_id){
 
     //玩家控制器
     function PlayerController(player_max) {
-        this.max = player_max ? player_max: DEFAULT_GAME_PLAYER;
+        this.max = player_max ? player_max: DEFAULT_PLAYER_SIZE;
         this.current = 1;
         this.count = 1;
     }
@@ -622,8 +623,8 @@ function AppWeiqi (display_id){
         //设置显示基数
         Obj.SetDisplaySize = function(display_size) {
             if( !isNaN(display_size) && display_size) {
-                if( display_size < 10 ) {
-                    display_size = 10;
+                if( display_size < MIN_DISPLAY_SIZE ) {
+                    display_size = MIN_DISPLAY_SIZE;
                 }
             } else {
                 return null;
@@ -636,8 +637,8 @@ function AppWeiqi (display_id){
             if(!isNaN(game_size)) {
                 if( game_size > TagX.length) {
                     game_size = TagX.length;
-                } else if( game_size < 9) {
-                    game_size = 9;
+                } else if( game_size < MIN_GAME_SiZE) {
+                    game_size = MIN_GAME_SiZE;
                 }
             } else {
                 return null; 
@@ -730,7 +731,7 @@ function AppWeiqi (display_id){
             //画星位。
             CanvasContext.fillStyle = '#000';
             var arcR = DisplaySize/8;
-            if (GameSize === 19) {
+            if (GameSize === DEFAULT_GAME_SiZE) {
                 CanvasContext.beginPath();
                 CanvasContext.arc(BoardMargin+DisplaySize*3, BoardMargin+DisplaySize*3, arcR, 0, 2*Math.PI);
                 CanvasContext.arc(BoardMargin+DisplaySize*9, BoardMargin+DisplaySize*3, arcR, 0, 2*Math.PI);
@@ -823,32 +824,38 @@ function AppWeiqi (display_id){
             if (x > 25 || y > 25 ) {
                 return false;
             }
+			var cr = DisplaySize/2 - 0.5;
+			var cx = x * DisplaySize + BoardStartXY + DisplaySize/2;
+			var cy = y * DisplaySize + BoardStartXY + DisplaySize/2;
             //画棋子
+			CanvasContext.save();
             CanvasContext.beginPath();
             var grd = CanvasContext.createRadialGradient(
-                x * DisplaySize + BoardStartXY + DisplaySize/2 - DisplaySize / 6, 
-                y * DisplaySize + BoardStartXY + DisplaySize/2 - DisplaySize / 6,
+                cx - DisplaySize / 6, 
+                cy - DisplaySize / 6,
                 0.5,
-                x * DisplaySize + BoardStartXY + DisplaySize/2, 
-                y * DisplaySize + BoardStartXY + DisplaySize/2,
-                DisplaySize/2
+                cx, 
+                cy,
+                cr
             );
             if(player == Black) {
                 grd.addColorStop(0, '#555');
                 grd.addColorStop(0.9, '#222');
-                CanvasContext.fillStyle = grd;
             } else if( player == White) {
                 grd.addColorStop(0, '#eee');
                 grd.addColorStop(0.9, '#bbb');
-                CanvasContext.fillStyle = grd;
             }
+			
+			CanvasContext.shadowBlur = DisplaySize/9;
+			CanvasContext.shadowColor = '#555';
+            CanvasContext.fillStyle = grd;
             CanvasContext.arc(
-                x * DisplaySize + BoardStartXY + DisplaySize/2, 
-                y * DisplaySize + BoardStartXY + DisplaySize/2,
-                DisplaySize/2, 0, 2*Math.PI);
+                cx, 
+                cy,
+                cr, 0, 2*Math.PI);
 
             CanvasContext.fill();
-            
+			CanvasContext.restore();
             /*
             CanvasContext.drawImage(PlayerImageList[player],
                 x * DisplaySize + BoardStartXY,
@@ -908,14 +915,14 @@ function AppWeiqi (display_id){
 
     }
     //显示尺寸基数设置
-    APP.DisplaySize = DEFAULT_DISPLAY_SIZE;
+    APP.DisplaySize = 27;
     APP.ApplyDisplaySize = function() {
         HandleChessBoard.SetDisplaySize(APP.DisplaySize);
         HandleChessBoard.Draw();
     }
 
     //游戏玩家设置
-    APP.PlayerSize = DEFAULT_GAME_PLAYER;
+    APP.PlayerSize = DEFAULT_PLAYER_SIZE;
     APP.ApplyPlayerSize = function() {
 
     }
@@ -935,7 +942,12 @@ function AppWeiqi (display_id){
 
     //初始化
     Display = document.getElementById(APP.DisplayId);
+	
     Canvas = document.createElement('canvas');
+	Canvas.style.border = '1px solid #555';
+	Canvas.style.borderRadius = '5px';
+	Canvas.style.boxShadow = '3px 3px 3px #333';
+	
     Display.appendChild(Canvas);
     HandleChessBoard = new ChessBoardByCanvas(Canvas);
     HandleChessBoard.SetDisplaySize(APP.DisplaySize);
