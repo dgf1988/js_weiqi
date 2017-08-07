@@ -950,8 +950,8 @@ function AppWeiqi(display_id) {
 
     Canvas = document.createElement('canvas');
     Canvas.style.border = '1px solid #555';
-    Canvas.style.borderRadius = '5px';
-    Canvas.style.boxShadow = '3px 3px 3px #333';
+    Canvas.style.borderRadius = '4px';
+    Canvas.style.boxShadow = '2px 2px 3px #555';
 
     Display.appendChild(Canvas);
     ChessBoardHandler = new WeiqiChessBoardCanvasHandler(Canvas);
