@@ -345,7 +345,7 @@ function AppWeiqi(display_id) {
         this.cellmap = cellmap ? cellmap : new WeiqiCellMap(DEFAULT_GAME_SiZE);
 
         //父节点
-        this.father = null;
+        this.parent = null;
         //子节点
         this.children = [];
     }
@@ -359,25 +359,23 @@ function AppWeiqi(display_id) {
     }
     WeiqiMove.prototype.Clone = function () {
         var move = new WeiqiMove(this.count, this.player, this.point.Clone(), this.cellmap.Clone());
-        move.father = this.father ? this.father.Clone() : null;
+        move.parent = this.parent ? this.parent.Clone() : null;
         for (var i = 0; i < this.children.length; i++) {
             move.children[i] = this.children[i].Clone();
         }
         return move;
     }
-    WeiqiMove.prototype.SetFather = function (father) {
-        this.father = father;
+    WeiqiMove.prototype.SetParent = function (parent) {
+        this.parent = parent;
     }
     WeiqiMove.prototype.AppendChild = function (move) {
         this.children.push(move);
     }
-    WeiqiMove.prototype.GetChildBy = function (i) {
+    WeiqiMove.prototype.GetChild = function (i) {
+        if (this.children.length === 0) return null;
+        i = i >= 0 ? i : 0;
         if (i >= this.children.length) return null;
         return this.children[i];
-    }
-    WeiqiMove.prototype.GetChild = function () {
-        if (this.children.length === 0) return null;
-        return this.children[0];
     }
     WeiqiMove.prototype.GetLast = function () {
         if (this.children.length === 0) return null;
@@ -387,15 +385,15 @@ function AppWeiqi(display_id) {
         }
         return child;
     }
-    WeiqiMove.prototype.GetFather = function () {
-        return this.father
+    WeiqiMove.prototype.GetParent = function () {
+        return this.parent
     }
     WeiqiMove.prototype.GetRoot = function () {
-        var father = this.father;
-        while (father) {
-            father = father.father;
+        var parent = this.parent;
+        while (parent) {
+            parent = parent.parent;
         }
-        return father;
+        return parent;
     }
 
 
@@ -549,10 +547,10 @@ function AppWeiqi(display_id) {
         Game.Move = function (point) {
             var move = Player.Move(point, Now.cellmap.Clone());
             if (move) {
-                var tryfather = Now.father;
-                if (tryfather) {
-                    console.log('has father');
-                    if (tryfather.cellmap.EqualsPlayer(move.cellmap)) {
+                var tryparent = Now.parent;
+                if (tryparent) {
+                    console.log('has parent');
+                    if (tryparent.cellmap.EqualsPlayer(move.cellmap)) {
                         console.log('同型');
                         return false;
                     }
@@ -560,7 +558,7 @@ function AppWeiqi(display_id) {
 
                 Player.Next();
 
-                move.SetFather(Now);
+                move.SetParent(Now);
                 Now.AppendChild(move);
                 Now = move;
 
